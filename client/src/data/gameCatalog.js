@@ -124,7 +124,67 @@ export const CONGRESS_LAWS = [
     difficulty: 42,
     effects: { approval: 10, order: 8, monthlyExpensesDelta: 35 },
   },
+  {
+    id: 'zona_franca_madero',
+    name: 'Ley de Zona Franca en Puerto Madero',
+    detail: '+$100k/mes ingresos, -4% Congreso, +3% Orden.',
+    difficulty: 58,
+    effects: { monthlyIncomeDelta: 100, order: 3 },
+  },
+  {
+    id: 'emergencia_sanitaria',
+    name: 'Ley de Emergencia Sanitaria',
+    detail: '+12% Aprobación, +6% Orden, +$25k/mes gasto.',
+    difficulty: 44,
+    effects: { approval: 12, order: 6, monthlyExpensesDelta: 25 },
+  },
+  {
+    id: 'blanqueo_reconstruccion',
+    name: 'Ley de Blanqueo para Reconstrucción',
+    detail: '+$260k inmediatos en caja, -7% Aprobación.',
+    difficulty: 54,
+    effects: { treasury: 260, approval: -7 },
+  },
+  {
+    id: 'control_contrabando',
+    name: 'Ley de Control Aduanero y Antinarcóticos',
+    detail: '+12% Orden, +$45k/mes ingresos aduaneros.',
+    difficulty: 50,
+    effects: { order: 12, monthlyIncomeDelta: 45 },
+  },
+  {
+    id: 'reforma_transporte',
+    name: 'Ley de Integración Subte-Metrobus',
+    detail: '+$55k/mes ingresos, +7% Aprobación.',
+    difficulty: 49,
+    effects: { monthlyIncomeDelta: 55, approval: 7 },
+  },
+  {
+    id: 'impuesto_grandes_fortunas',
+    name: 'Aporte Solidario de Grandes Fortunas',
+    detail: '+$320k inmediatos, +5% Aprobación, -6% Congreso.',
+    difficulty: 60,
+    effects: { treasury: 320, approval: 5 },
+  },
+  {
+    id: 'fomento_cultura_barrios',
+    name: 'Ley de Fomento Cultural (Colón y La Boca)',
+    detail: '+14% Aprobación, +$30k/mes turismo, +$15k/mes gasto.',
+    difficulty: 40,
+    effects: { approval: 14, monthlyIncomeDelta: 30, monthlyExpensesDelta: 15 },
+  },
 ];
+
+export function pickCongressAgenda(passedLaws = [], excludeIds = []) {
+  const remaining = CONGRESS_LAWS.filter((l) => !passedLaws.includes(l.id));
+  const fresh = remaining.filter((l) => !excludeIds.includes(l.id));
+  const pool = fresh.length >= 3 ? [...fresh] : [...remaining];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 3).map((l) => l.id);
+}
 
 export const SPECIAL_PROJECTS = [
   {

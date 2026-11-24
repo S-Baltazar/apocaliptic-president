@@ -4,6 +4,7 @@ import {
   SECTOR_LEVELS,
   SOCIAL_PLANS,
   CONGRESS_LAWS,
+  pickCongressAgenda,
   SPECIAL_PROJECTS,
   WEATHERS,
   RANDOM_EVENTS,
@@ -99,6 +100,8 @@ router.post('/game/start', (req, res) => {
     blackMarket: 10,
     activePlans: [],
     passedLaws: [],
+    congressAgenda: pickCongressAgenda([], []),
+    congressNextRotationMonth: 4,
     completedProjects: [],
     activeProject: null,
     weather: WEATHERS[0],
@@ -234,6 +237,7 @@ router.post('/game/law', (req, res) => {
   if (approved) {
     currentGameState.passedLaws.push(lawId);
     const fx = law.effects;
+    if (fx.treasury) currentGameState.stats.treasury += fx.treasury;
     if (fx.monthlyIncomeDelta) currentGameState.stats.monthlyIncome += fx.monthlyIncomeDelta;
     if (fx.monthlyExpensesDelta) {
       currentGameState.stats.monthlyExpenses = Math.max(0, currentGameState.stats.monthlyExpenses + fx.monthlyExpensesDelta);
@@ -309,6 +313,16 @@ router.post('/game/next-month', (_req, res) => {
   currentGameState.stats.treasury += net;
   currentGameState.month += 1;
   currentGameState.pressUsedThisMonth = false;
+
+  // Rotación automática de propuestas del Congreso cada 3 meses
+  if (currentGameState.month >= currentGameState.congressNextRotationMonth) {
+    currentGameState.congressAgenda = pickCongressAgenda(
+      currentGameState.passedLaws,
+      currentGameState.congressAgenda
+    );
+    currentGameState.congressNextRotationMonth = currentGameState.month + 3;
+    currentGameState.newsHeadline = `EL CRONISTA: EL CONGRESO RENUEVA SU AGENDA LEGISLATIVA (MES ${currentGameState.month}).`;
+  }
 
   // Avance de Obra Especial en curso
   if (currentGameState.activeProject) {

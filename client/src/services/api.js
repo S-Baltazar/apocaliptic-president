@@ -3,6 +3,7 @@ import {
   SECTOR_LEVELS,
   SOCIAL_PLANS,
   CONGRESS_LAWS,
+  pickCongressAgenda,
   SPECIAL_PROJECTS,
   WEATHERS,
   RANDOM_EVENTS,
@@ -48,6 +49,8 @@ export async function startGameSession(playerName, presidentId, gameMode = 'mand
       blackMarket: 10,
       activePlans: [],
       passedLaws: [],
+      congressAgenda: pickCongressAgenda([], []),
+      congressNextRotationMonth: 4,
       completedProjects: [],
       activeProject: null,
       weather: WEATHERS[0],
@@ -152,6 +155,7 @@ export function proposeLaw(currentState, lawId, negotiate = false) {
     }
     if (support >= law.difficulty) {
       next.passedLaws.push(lawId);
+      if (law.effects.treasury) next.stats.treasury += law.effects.treasury;
       if (law.effects.monthlyIncomeDelta) next.stats.monthlyIncome += law.effects.monthlyIncomeDelta;
       if (law.effects.monthlyExpensesDelta) next.stats.monthlyExpenses += law.effects.monthlyExpensesDelta;
       if (law.effects.order) next.stats.order = clamp(next.stats.order + law.effects.order);
@@ -191,6 +195,10 @@ export async function advanceMonth(currentState) {
     next.stats.treasury += next.stats.monthlyIncome - next.stats.monthlyExpenses;
     next.month += 1;
     next.pressUsedThisMonth = false;
+    if (next.month >= (next.congressNextRotationMonth || 4)) {
+      next.congressAgenda = pickCongressAgenda(next.passedLaws, next.congressAgenda);
+      next.congressNextRotationMonth = next.month + 3;
+    }
     next.weather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
     if (!next.activeEvent && Math.random() < 0.75) {
       next.activeEvent = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
