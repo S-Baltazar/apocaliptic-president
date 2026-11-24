@@ -1,0 +1,25 @@
+:root {
+  /* Paleta Apocalíptica Pixel Art */
+  --bg-void: #0d0e15;
+  --bg-panel: #191c28;
+  --bg-panel-dark: #11131c;
+  --bg-panel-light: #252a3d;
+
+  --border-dark: #07080d;
+  --border-light: #4b5575;
+  --border-highlight: #7a88b8;
+
+  --text-main: #e8ecf5;
+  --text-muted: #98a2c4;
+  --text-dim: #667091;
+
+  --accent-amber: #f59e0b;
+  --accent-amber-dark: #b45309;
+  --accent-red: #ef4444;
+  --accent-green: #22c55e;
+  --accent-cyan: #38bdf8;
+  --accent-purple: #a855f7;
+
+  --font-pixel-title: 'Press Start 2P', monospace;
+  --font-pixel-body: 'VT323', monospace;
+}

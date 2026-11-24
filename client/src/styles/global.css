@@ -1,0 +1,516 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-void);
+  color: var(--text-main);
+  font-family: var(--font-pixel-body);
+  image-rendering: pixelated;
+}
+
+/* Marco estilo Pixel Art con bordes escalonados */
+.pixel-box {
+  background-color: var(--bg-panel);
+  border: 3px solid var(--border-light);
+  box-shadow:
+    0 0 0 3px var(--border-dark),
+    inset 0 3px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -3px 0 0 rgba(0, 0, 0, 0.45);
+}
+
+.pixel-box-dark {
+  background-color: var(--bg-panel-dark);
+  border: 3px solid var(--border-dark);
+  box-shadow:
+    inset 0 2px 0 0 rgba(255, 255, 255, 0.05),
+    0 3px 0 0 rgba(0, 0, 0, 0.6);
+}
+
+.pixel-btn {
+  font-family: var(--font-pixel-title);
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  padding: 10px 16px;
+  background-color: var(--accent-amber);
+  color: #11131c;
+  border: 3px solid #fde68a;
+  box-shadow:
+    0 0 0 3px var(--border-dark),
+    inset 0 -3px 0 0 var(--accent-amber-dark);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: transform 0.05s steps(2);
+}
+
+.pixel-btn:hover:not(:disabled) {
+  background-color: #fbbf24;
+  transform: translateY(-1px);
+}
+
+.pixel-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 3px var(--border-dark);
+}
+
+.pixel-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pixel-btn--secondary {
+  background-color: var(--bg-panel-light);
+  color: var(--text-main);
+  border-color: var(--border-highlight);
+  box-shadow:
+    0 0 0 3px var(--border-dark),
+    inset 0 -3px 0 0 var(--bg-panel-dark);
+}
+
+.pixel-btn--secondary:hover:not(:disabled) {
+  background-color: #323954;
+}
+
+/* Pantalla de Selección de Presidente */
+.setup-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px 16px 36px;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(245, 158, 11, 0.12), transparent 55%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.015) 0px,
+      rgba(255, 255, 255, 0.015) 2px,
+      transparent 2px,
+      transparent 4px
+    ),
+    var(--bg-void);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.setup-container {
+  width: 100%;
+  max-width: 1060px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.setup-header {
+  padding: 18px 20px;
+  text-align: center;
+}
+
+.setup-badge {
+  display: inline-block;
+  font-family: var(--font-pixel-title);
+  font-size: 9px;
+  color: var(--accent-amber);
+  background: rgba(245, 158, 11, 0.14);
+  border: 2px solid var(--accent-amber-dark);
+  padding: 4px 10px;
+  margin-bottom: 12px;
+}
+
+.setup-title {
+  font-family: var(--font-pixel-title);
+  font-size: clamp(16px, 2.5vw, 24px);
+  line-height: 1.4;
+  color: var(--text-main);
+  text-shadow: 3px 3px 0 var(--border-dark);
+  margin-bottom: 8px;
+}
+
+.setup-subtitle {
+  font-size: 22px;
+  color: var(--text-muted);
+}
+
+.name-bar {
+  padding: 16px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.name-label {
+  font-family: var(--font-pixel-title);
+  font-size: 11px;
+  color: var(--accent-cyan);
+}
+
+.pixel-input {
+  flex: 1;
+  min-width: 240px;
+  font-family: var(--font-pixel-body);
+  font-size: 24px;
+  padding: 6px 12px;
+  background-color: var(--bg-panel-dark);
+  color: var(--text-main);
+  border: 3px solid var(--border-light);
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.6);
+  outline: none;
+}
+
+.pixel-input:focus {
+  border-color: var(--accent-amber);
+}
+
+.presidents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+  gap: 16px;
+}
+
+.president-card {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.08s steps(2);
+  text-align: left;
+}
+
+.president-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-highlight);
+}
+
+.president-card.is-selected {
+  border-color: var(--accent-amber);
+  background-color: #212536;
+  box-shadow:
+    0 0 0 3px var(--border-dark),
+    0 0 18px rgba(245, 158, 11, 0.25);
+}
+
+.president-card-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.president-name-block h3 {
+  font-family: var(--font-pixel-title);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--accent-amber);
+}
+
+.president-archetype {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.president-quote {
+  font-size: 18px;
+  color: var(--accent-cyan);
+  font-style: italic;
+}
+
+.president-desc {
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--text-main);
+}
+
+.president-bonuses {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 17px;
+  color: var(--text-muted);
+  border-top: 2px dashed var(--border-light);
+  padding-top: 8px;
+}
+
+.president-stats-mini {
+  display: flex;
+  justify-content: space-between;
+  font-size: 17px;
+  padding: 6px 8px;
+  background: var(--bg-panel-dark);
+  border: 2px solid var(--border-dark);
+}
+
+.setup-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+}
+
+.error-text {
+  color: var(--accent-red);
+  font-size: 20px;
+}
+
+/* Vista Principal del Juego (Canvas 3D + HUD Pixel Art) */
+.game-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scene-canvas-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.scene-canvas-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Capa HUD sobre el 3D */
+.hud-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.hud-layer .interactive {
+  pointer-events: auto;
+}
+
+.hud-top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.hud-president-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-president-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hud-president-name {
+  font-family: var(--font-pixel-title);
+  font-size: 10px;
+  color: var(--accent-amber);
+}
+
+.hud-city-date {
+  font-size: 19px;
+  color: var(--text-muted);
+}
+
+.hud-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.metric-chip {
+  background: var(--bg-panel-dark);
+  border: 2px solid var(--border-light);
+  padding: 4px 10px;
+  display: flex;
+  flex-direction: column;
+  min-width: 98px;
+}
+
+.metric-label {
+  font-family: var(--font-pixel-title);
+  font-size: 8px;
+  color: var(--text-dim);
+  margin-bottom: 2px;
+}
+
+.metric-value {
+  font-size: 21px;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.metric-value.positive {
+  color: var(--accent-green);
+}
+
+.metric-value.warning {
+  color: var(--accent-amber);
+}
+
+.metric-value.danger {
+  color: var(--accent-red);
+}
+
+/* Panel lateral izquierdo de sectores */
+.hud-middle {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  gap: 12px;
+}
+
+.sectors-panel {
+  width: 245px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectors-title {
+  font-family: var(--font-pixel-title);
+  font-size: 9px;
+  color: var(--accent-cyan);
+  margin-bottom: 4px;
+}
+
+.sector-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+  background: var(--bg-panel-dark);
+  border: 2px solid var(--border-dark);
+  font-size: 18px;
+}
+
+.sector-badge {
+  font-family: var(--font-pixel-title);
+  font-size: 8px;
+  padding: 2px 5px;
+  border: 1px solid var(--border-dark);
+}
+
+.sector-badge.lvl-0 {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.sector-badge.lvl-1 {
+  background: #78350f;
+  color: #fde68a;
+}
+
+.sector-inspector {
+  width: 270px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspector-title {
+  font-family: var(--font-pixel-title);
+  font-size: 10px;
+  color: var(--accent-amber);
+}
+
+/* Cuadro de Diálogo de la Secretaria */
+.secretary-box {
+  width: 100%;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.secretary-portrait-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.secretary-tag {
+  font-family: var(--font-pixel-title);
+  font-size: 8px;
+  color: var(--accent-cyan);
+  text-align: center;
+}
+
+.secretary-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.secretary-text {
+  font-size: 23px;
+  line-height: 1.25;
+  color: var(--text-main);
+  min-height: 64px;
+}
+
+.secretary-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.secretary-step {
+  font-family: var(--font-pixel-title);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.hint-bar {
+  align-self: center;
+  padding: 6px 14px;
+  font-size: 19px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 760px) {
+  .sectors-panel {
+    display: none;
+  }
+
+  .secretary-box {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .secretary-portrait-col {
+    flex-direction: row;
+  }
+}

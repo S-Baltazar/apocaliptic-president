@@ -1,0 +1,258 @@
+================================================================================
+PRESIDENCIA APOCALIPTICA - DOCUMENTO DE IDEAS DEL JUEGO Y PAGINA WEB
+================================================================================
+
+1. CONCEPTO PRINCIPAL
+---------------------
+Tras un evento catastrofico que destruye casi por completo una ciudad ficticia,
+asumes el cargo de Presidente en medio del caos. No empiezas con una ciudad
+vacia: empiezas con ruinas, servicios colapsados, desorden social y muy poco
+presupuesto.
+
+Tu objetivo es reconstruir la ciudad paso a paso, tomando decisiones dificiles,
+equilibrando las cuentas mes a mes, negociando con el Congreso y otros paises,
+y sobreviviendo a eventos aleatorios sin llevar al Estado a la quiebra ni
+perder el control del pais.
+
+
+2. ESTETICA VISUAL: PIXEL ART
+-----------------------------
+- Toda la identidad visual del proyecto sera PIXEL ART.
+- En la interfaz web (HTML/CSS/React):
+  * Tipografias pixeladas (estilo retro / consola / terminal de mando).
+  * Marcos, botones, barras de progreso e iconos dibujados en pixel art.
+  * Uso de `image-rendering: pixelated` para mantener bordes nitidos.
+- En la escena 3D (Three.js):
+  * Diorama o maqueta de la ciudad / sala presidencial con texturas pixel art
+    (filtro NearestFilter en Three.js para que los pixeles no se difuminen).
+  * Cambio visual en tiempo real: cuando un sector pasa de "Roto" a
+    "Reparado" o "Futurista", su aspecto en la ciudad cambia (de escombros y
+    humo a luces neon, energia limpia, barcos en el puerto y trenes modernos).
+  * Paleta dinamica: empieza oscura, grisacea y oxidada; a medida que mejora
+    la ciudad, gana color, iluminacion y vida.
+
+
+3. MECANICA CENTRAL: SUBIR Y BAJAR NIVELES + MANTENIMIENTO MENSUAL
+------------------------------------------------------------------
+Cada infraestructura o sector de la ciudad tiene distintos niveles de mejora.
+No solo cuesta dinero construir o mejorar algo: cada nivel tiene un COSTO DE
+MANTENIMIENTO MENSUAL fijo.
+
+IMPORTANTE - SUBIR Y BAJAR DE NIVEL:
+- El jugador puede tanto SUBIR como BAJAR el nivel de las instalaciones.
+- Subir de nivel requiere inversion inicial y aumenta el gasto mensual.
+- Bajar de nivel (recortar / desmantelar / pasar a modo ahorro) reduce el gasto
+  mensual de inmediato para evitar la quiebra en momentos de crisis, aunque
+  genera malestar social o perdida de eficiencia.
+
+Ejemplo principal - EL SUBTE (Transporte):
+- Nivel 0 | Roto / Abandonado        -> Costo: $0k/mes
+  Efecto: Sin transporte, la economia crece muy lento y baja la moral.
+- Nivel 1 | Reparacion de emergencia -> Costo: $60k/mes
+  Efecto: Funciona a medias, reduce un poco el caos, fallas frecuentes.
+- Nivel 2 | Subte Estandar           -> Costo: $150k/mes
+  Efecto: Movilidad estable, mejora la productividad y la aprobacion.
+- Nivel 3 | Subte Futurista          -> Costo: $400k/mes
+  Efecto: Trenes magneticos ultrarrapidos, gran impulso economico y prestigio.
+
+REGLA DE ORO (RIESGO DE QUIEBRA):
+Si el jugador mejora todo a "Futurista" de golpe sin tener una economia que lo
+respalde, los costos fijos mensuales superaran los ingresos. En pocos meses se
+queda sin reservas y CAE EN QUIEBRA (Game Over), salvo que recorte niveles a
+tiempo, suba impuestos o consiga financiamiento externo.
+
+
+4. SECTORES E INFRAESTRUCTURAS PARA GESTIONAR
+---------------------------------------------
+Todos los sectores permiten subir o bajar su nivel de inversion/operacion:
+
+1) Transporte (Subte y Avenidas):
+   Impacta en comercio, movilidad y aprobacion ciudadana.
+2) El Puerto (Comercio Maritimo y Logistica):
+   - Nivel 0: Puerto destruido / bloqueado por chatarra ($0k/mes).
+   - Nivel 1: Muelle improvisado para barcazas basicas.
+   - Nivel 2: Puerto comercial operativo (habilita comercio exterior).
+   - Nivel 3: Megapuerto automatizado futurista (multiplica ingresos por
+     exportaciones y aranceles aduaneros, pero exige alto mantenimiento).
+   - Tener el puerto activo es clave para aprovechar los impuestos aduaneros
+     y las relaciones internacionales.
+3) Policia y Seguridad:
+   Controla criminalidad, saqueos y protestas. Demasiada inversion sin control
+   puede bajar la libertad/aprobacion; muy poca dispara el caos.
+4) Bomberos y Defensa Civil:
+   Reduce el dano de incendios, explosiones, derrumbes y catastrofes. Si los
+   recortas al minimo, cualquier evento aleatorio de incendio o sismo destruye
+   el doble de infraestructura.
+5) Hospitales y Salud Publica:
+   Mantiene sana a la poblacion trabajadora, evita epidemias y reduce muertes
+   en crisis.
+6) Red Electrica y Energia:
+   De apagones ($0k/mes) -> generadores viejos -> energia limpia -> reactor
+   futurista. Sin energia suficiente, el resto de los sectores rinden menos.
+7) Agua, Saneamiento y Vivienda:
+   Evita enfermedades, aloja a la poblacion y mejora la estabilidad social.
+8) Industria, Comercio y Tecnologia:
+   Motores de recaudacion interna y desbloqueo de mejoras avanzadas.
+
+
+5. IMPUESTOS NACIONALES Y ADUANEROS
+-----------------------------------
+El presidente puede ajustar las tasas impositivas para equilibrar la caja:
+
+- Impuestos Nacionales (IVA, ganancias, consumo interno):
+  * Bajos: Fomentan el crecimiento economico y suben la aprobacion, pero
+    recaudan poco.
+  * Medios: Equilibrio estable.
+  * Altos: Recaudacion rapida para tapar deficits, pero generan descontento,
+    huelgas, evasion y freno economico.
+- Impuestos Aduaneros (Aranceles a importaciones/exportaciones en el Puerto):
+  * Bajos (Libre comercio): Atraen inversiones y mejoran relaciones
+    internacionales, bajan precios locales, pero dejan menos caja directa.
+  * Altos (Proteccionismo): Recaudan fuerte si el Puerto esta activo y
+    protegen la industria local, pero pueden molestar a paises socios y
+    encarecer insumos tecnologicos.
+
+
+6. PLANES SOCIALES Y POLITICAS DE ASISTENCIA
+--------------------------------------------
+El jugador puede activar, modificar o suspender PLANES SOCIALES para contener
+el desorden y ayudar a la poblacion afectada por el apocalipsis:
+
+- Ejemplos de planes:
+  * Tarjeta alimentaria / Raciones basicas.
+  * Subsidio de vivienda y reconstruccion.
+  * Seguro de desempleo / Plan de empleo publico en obras.
+  * Becas tecnicas y capacitacion (a mediano plazo mejora la productividad).
+- Impacto:
+  * Aumentan la aprobacion presidencial y bajan el riesgo de revueltas.
+  * Tienen un costo mensual por cantidad de beneficiarios.
+  * Si se quitan de golpe en plena crisis, pueden detonar protestas masivas.
+
+
+7. RELACIONES INTERNACIONALES CON OTROS PAISES
+----------------------------------------------
+La ciudad no esta aislada: existen otros paises o potencias vecinas (ficticias)
+con las que el presidente debe negociar y confirmar relaciones diplomaticas:
+
+- Estados de relacion: Hostil -> Tensa -> Neutral -> Aliado -> Socio Estrategico.
+- Acciones diplomaticas:
+  * Firmar tratados comerciales (aumentan ingresos del Puerto).
+  * Solicitar prestamos internacionales o ayuda humanitaria de emergencia
+    (dinero rapido a cambio de intereses o condiciones).
+  * Intercambio tecnologico (abarata mejoras futuristas).
+  * Embargos o sanciones (si subes demasiado aranceles o apruebas leyes
+    polemicas, un pais aliado puede cortar el comercio).
+- Eventos diplomaticos: visitas de embajadores, cumbres, pedidos de ayuda,
+  disputas fronterizas o maritimas.
+
+
+8. CONGRESO Y PROPUESTA DE LEYES
+--------------------------------
+No todas las decisiones se toman por decreto: muchas medidas estructurales
+requieren PROPONER LEYES y lograr que el CONGRESO las apruebe.
+
+- Composicion del Congreso:
+  Distintos bloques o facciones (ej. Reformistas, Conservadores, Sindicalistas,
+  Tecnocratas, Oposicion radical), cada uno con sus intereses y nivel de
+  apoyo hacia el presidente.
+- Ejemplos de leyes a proponer:
+  * Ley de Reforma Tributaria (subir/bajar techos de impuestos).
+  * Ley de Emergencia Economica (permite recortar planes o sueldos publicos).
+  * Ley de Modernizacion Portuaria y Libre Comercio.
+  * Ley de Seguridad Nacional (amplia facultades policiales).
+  * Ley de Presupuesto Verde / Transicion Energetica.
+  * Ley de Rescate Estatal / Emision de Bonos.
+- Mecanica de votacion:
+  * Antes de votar, puedes negociar concesiones con bloques del Congreso
+    (ej. aprobar un plan social a cambio de votos para una reforma fiscal).
+  * Si la ley se aprueba, entra en vigencia con sus bonificaciones/costos.
+  * Si es rechazada, pierdes capital politico y aprobacion.
+
+
+9. OTRAS MECANICAS COMPLEMENTARIAS
+----------------------------------
+- Gabinete de Ministros:
+  Nombrar ministros (Economia, Seguridad, Relaciones Exteriores, Obras) que
+  otorgan bonificaciones pasivas o alertas tempranas, pero tambien pueden
+  generar escandalos o renunciar si ignoras sus consejos.
+- Banco Central / Deuda Publica:
+  Posibilidad de emitir deuda o pedir creditos cuando falta liquidez, con el
+  riesgo de inflacion o intereses impagables si se abusa.
+- Comunicacion Presidencial / Prensa:
+  Dar discursos o campanas informativas para calmar el panico tras un evento
+  aleatorio (cuesta dinero o tiempo, pero frena caidas de aprobacion).
+- Proyectos Especiales / Maravillas Civicas:
+  Obras unicas de largo plazo (ej. Domo Antitormentas, Escudo Energetico,
+  Universidad Central) que marcan hitos en la reconstruccion.
+
+
+10. SISTEMA DE TURNOS (MESES) Y EQUILIBRIO ECONOMICO
+----------------------------------------------------
+- El juego avanza por meses (Mes 1, Mes 2, Mes 3...).
+- Al final de cada mes se calcula:
+  Ingresos (impuestos nacionales, aduanas/puerto, comercio, acuerdos externos)
+  - Gastos (mantenimiento de todos los sectores, planes sociales, deuda).
+- Indicadores principales en pantalla (HUD):
+  * Tesoreria / Dinero disponible y Balance mensual (+/- $k por mes).
+  * Orden / Estabilidad de la ciudad (0% a 100%).
+  * Aprobacion presidencial (0% a 100%).
+  * Apoyo en el Congreso (% de bancas favorables).
+  * Nivel de Reconstruccion / Progreso general.
+
+
+11. EVENTOS ALEATORIOS Y TOMA DE DECISIONES
+-------------------------------------------
+Cada ciertos turnos surgen EVENTOS ALEATORIOS que ponen a prueba la gestion:
+
+- "Inundacion en los tuneles del subte" (afecta segun nivel del subte y
+  bomberos).
+- "Incendio en el distrito industrial" (si los bomberos estan en nivel bajo,
+  el dano y la perdida economica son graves).
+- "Huelga portuaria / Bloqueo aduanero" (paraliza ingresos del puerto hasta
+  negociar o enviar policia).
+- "Epidemia post-colapso" (pone a prueba el nivel de hospitales y agua).
+- "Ultimatum de pais vecino" (exigen bajar aranceles o amenazan con cortar
+  relaciones diplomaticas).
+- "Mocion de censura / Crisis en el Congreso" (la oposicion intenta frenar
+  tus leyes).
+- "Oferta de megacorporacion" / "Llegada de refugiados" / "Hallazgo de
+  tecnologia pre-colapso".
+
+
+12. CONDICIONES DE DERROTA Y VICTORIA
+-------------------------------------
+Posibles derrotas (Game Over):
+- Quiebra: Dinero negativo sostenido, deuda impagable y default total.
+- Golpe / Revuelta: El orden o la aprobacion llegan a 0%.
+- Destitucion / Juicio Politico: El Congreso se vuelve totalmente hostil y
+  destituye al presidente.
+- Colapso total: Demasiados sectores destruidos sin atencion.
+
+Posibles victorias:
+- Completar el mandato (ej. 24 o 36 meses) con la ciudad reconstruida,
+  cuentas equilibradas, estabilidad social y relaciones internacionales activas.
+- Alcanzar el estatus de "Ciudad Renacida / Futurista" con finanzas sanas.
+
+
+13. INTEGRACION CON LA PAGINA WEB (STACK TECNOLOGICO)
+-----------------------------------------------------
+- HTML5 + CSS3 + React:
+  * Pantalla de inicio pixel art (Nueva Partida / Continuar).
+  * HUD superior con dinero, balance mensual, mes actual, orden, aprobacion y
+    apoyo del Congreso.
+  * Pestanas o paneles de gestion:
+    1) Infraestructura y Sectores (Subte, Puerto, Policia, Bomberos,
+       Hospitales, Energia, etc., con botones de Subir y Bajar nivel).
+    2) Economia e Impuestos (Nacionales, Aduaneros y Planes Sociales).
+    3) Congreso (Leyes disponibles, votaciones y negociacion).
+    4) Relaciones Internacionales (Mapa/lista de paises, tratados y ayudas).
+  * Tarjetas emergentes para los eventos aleatorios y toma de decisiones.
+- Three.js:
+  * Escena 3D interactiva de la ciudad en estilo pixel art/voxel.
+  * Al hacer clic en un distrito o edificio 3D (ej. el puerto, el subte, la
+    comisaria, el hospital o el congreso), se abre su menu de gestion en React.
+- Node.js (Backend):
+  * Guarda el estado de la partida, calcula el cierre de mes, procesa las
+    votaciones del Congreso, actualiza relaciones diplomaticas y dispara
+    eventos aleatorios desde el servidor.
+================================================================================
