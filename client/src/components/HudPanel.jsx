@@ -10,9 +10,13 @@ export default function HudPanel({
   onCloseSector,
   onChangeSectorLevel,
   onAdvanceMonth,
+  onOpenEconomy,
+  onOpenCongress,
+  onOpenProjects,
   onOpenDiplomacy,
+  onPressConference,
 }) {
-  const { playerName, president, cityName, month, stats, sectors } = gameState;
+  const { playerName, president, cityName, month, stats, sectors, weather, newsHeadline } = gameState;
   const monthlyBalance = stats.monthlyIncome - stats.monthlyExpenses;
 
   const liveSector = selectedSector
@@ -23,7 +27,8 @@ export default function HudPanel({
     liveSector && sectorLevels && liveSector.level < sectorLevels.length - 1
       ? sectorLevels[liveSector.level + 1]
       : null;
-  const discount = president.id === 'tecnocrata' ? 0.85 : 1;
+  let discount = president.id === 'tecnocrata' ? 0.85 : 1;
+  if (gameState.completedProjects?.includes('polo_uba')) discount *= 0.8;
   const nextUpgradeCost = nextLevelCfg ? Math.round(nextLevelCfg.upgradeCost * discount) : 0;
 
   return (
@@ -37,7 +42,9 @@ export default function HudPanel({
               PRES. {playerName.toUpperCase()} — {president.title}
             </span>
             <span className="hud-city-date">
-              {cityName} • MES {month} • INGRESOS +${stats.monthlyIncome}k / GASTOS -${stats.monthlyExpenses}k
+              {cityName} • MES {month}
+              {gameState.gameMode !== 'infinito' ? '/36' : ''} • CLIMA:{' '}
+              <strong style={{ color: '#38bdf8' }}>{weather?.name || 'Nublado'}</strong>
             </span>
           </div>
         </div>
@@ -74,18 +81,48 @@ export default function HudPanel({
         </div>
 
         <div className="hud-top-actions">
+          <button type="button" className="pixel-btn pixel-btn--secondary" onClick={onOpenEconomy}>
+            ECONOMÍA
+          </button>
+          <button type="button" className="pixel-btn pixel-btn--secondary" onClick={onOpenCongress}>
+            CONGRESO
+          </button>
+          <button type="button" className="pixel-btn pixel-btn--secondary" onClick={onOpenProjects}>
+            OBRAS
+          </button>
+          <button type="button" className="pixel-btn pixel-btn--secondary" onClick={onOpenDiplomacy}>
+            POTENCIAS
+          </button>
           <button
             type="button"
             className="pixel-btn pixel-btn--secondary"
-            onClick={onOpenDiplomacy}
+            disabled={gameState.pressUsedThisMonth}
+            onClick={onPressConference}
+            title="Cadena Nacional (-$60k): +8% Aprobación, +5% Orden"
           >
-            POTENCIAS EXTRANJERAS
+            PRENSA (-$60k)
           </button>
           <button type="button" className="pixel-btn" onClick={onAdvanceMonth}>
             AVANZAR MES ▶
           </button>
         </div>
       </header>
+
+      {/* Teletipo de El Cronista de Ceniza */}
+      {newsHeadline && (
+        <div
+          className="pixel-box-dark interactive"
+          style={{
+            marginTop: '6px',
+            padding: '4px 12px',
+            fontSize: '18px',
+            color: '#fde68a',
+            borderColor: '#b45309',
+          }}
+        >
+          📰 {newsHeadline}
+        </div>
+      )}
 
       {/* Paneles laterales medios */}
       <div className="hud-middle">
@@ -122,7 +159,10 @@ export default function HudPanel({
               </button>
             </div>
             <p style={{ fontSize: '19px', color: '#f59e0b' }}>
-              Estado: {liveSector ? `Nivel ${liveSector.level} — ${liveSector.status}` : selectedSector.status}
+              Estado:{' '}
+              {liveSector
+                ? `Nivel ${liveSector.level} — ${liveSector.status}`
+                : selectedSector.status}
             </p>
             <p style={{ fontSize: '18px', color: '#e8ecf5', lineHeight: 1.2 }}>
               {selectedSector.description}

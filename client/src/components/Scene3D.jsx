@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { createDestroyedCity } from '../three/createDestroyedCity.js';
 
-export default function Scene3D({ sectors, onSelectSector }) {
+export default function Scene3D({ sectors, weather, onSelectSector }) {
   const containerRef = useRef(null);
   const onSelectRef = useRef(onSelectSector);
-  const updateSectorsRef = useRef(null);
+  const controllerRef = useRef(null);
   onSelectRef.current = onSelectSector;
 
   useEffect(() => {
@@ -17,22 +17,27 @@ export default function Scene3D({ sectors, onSelectSector }) {
       }
     });
 
-    updateSectorsRef.current = controller.updateSectors;
-    if (sectors) {
-      controller.updateSectors(sectors);
-    }
+    controllerRef.current = controller;
+    if (sectors) controller.updateSectors(sectors);
+    if (weather) controller.updateWeather(weather.id);
 
     return () => {
-      updateSectorsRef.current = null;
+      controllerRef.current = null;
       controller.cleanup();
     };
   }, []);
 
   useEffect(() => {
-    if (updateSectorsRef.current && sectors) {
-      updateSectorsRef.current(sectors);
+    if (controllerRef.current && sectors) {
+      controllerRef.current.updateSectors(sectors);
     }
   }, [sectors]);
+
+  useEffect(() => {
+    if (controllerRef.current && weather) {
+      controllerRef.current.updateWeather(weather.id);
+    }
+  }, [weather]);
 
   return <div ref={containerRef} className="scene-canvas-wrapper" />;
 }

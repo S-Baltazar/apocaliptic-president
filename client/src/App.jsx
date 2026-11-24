@@ -5,11 +5,19 @@ import HudPanel from './components/HudPanel.jsx';
 import SecretaryBriefing from './components/SecretaryBriefing.jsx';
 import EventModal from './components/EventModal.jsx';
 import ForeignAidModal from './components/ForeignAidModal.jsx';
+import EconomyModal from './components/EconomyModal.jsx';
+import CongressModal from './components/CongressModal.jsx';
+import ProjectsModal from './components/ProjectsModal.jsx';
 import { PRESIDENTS_FALLBACK, buildSecretaryBriefing } from './data/presidents.js';
 import {
   fetchPresidents,
   startGameSession,
   changeSectorLevel,
+  updateTaxes,
+  toggleSocialPlan,
+  proposeLaw,
+  startSpecialProject,
+  holdPressConference,
   advanceMonth,
   resolveGameEvent,
   requestForeignAid,
@@ -31,20 +39,17 @@ const SECTOR_INFO_BY_ID = {
   energia: {
     id: 'energia',
     title: 'CENTRAL ELÉCTRICA',
-    description:
-      'Red energética de Buenos Aires. Mantenerla estable evita apagones y sostiene la producción.',
+    description: 'Red energética de Buenos Aires. Mantenerla estable evita apagones y sostiene la producción.',
   },
   hospital: {
     id: 'hospital',
     title: 'HOSPITAL CENTRAL',
-    description:
-      'Salud pública y respuesta sanitaria ante brotes y emergencias urbanas.',
+    description: 'Salud pública y respuesta sanitaria ante brotes y emergencias urbanas.',
   },
   policia: {
     id: 'policia',
     title: 'COMISARÍA Y BOMBEROS',
-    description:
-      'Seguridad ciudadana y control de incendios. Protege el orden público frente a crisis.',
+    description: 'Seguridad ciudadana y control de incendios. Protege el orden público frente a crisis.',
   },
 };
 
@@ -55,6 +60,12 @@ export default function App() {
   const [showBriefing, setShowBriefing] = useState(true);
   const [selectedSector, setSelectedSector] = useState(null);
   const [sectorError, setSectorError] = useState('');
+
+  const [showEconomy, setShowEconomy] = useState(false);
+  const [showCongress, setShowCongress] = useState(false);
+  const [congressFeedback, setCongressFeedback] = useState('');
+  const [showProjects, setShowProjects] = useState(false);
+  const [projectFeedback, setProjectFeedback] = useState('');
   const [showDiplomacy, setShowDiplomacy] = useState(false);
   const [diplomacyFeedback, setDiplomacyFeedback] = useState('');
 
@@ -62,15 +73,17 @@ export default function App() {
     fetchPresidents().then(setPresidents);
   }, []);
 
-  const handleStartGame = async (playerName, presidentId) => {
+  const handleStartGame = async (playerName, presidentId, gameMode) => {
     setIsSubmitting(true);
-    const state = await startGameSession(playerName, presidentId);
+    const state = await startGameSession(playerName, presidentId, gameMode);
     setGameState(state);
     setShowBriefing(true);
     setSelectedSector(null);
     setSectorError('');
+    setShowEconomy(false);
+    setShowCongress(false);
+    setShowProjects(false);
     setShowDiplomacy(false);
-    setDiplomacyFeedback('');
     setIsSubmitting(false);
   };
 
@@ -92,6 +105,41 @@ export default function App() {
       return;
     }
     setGameState(result.gameState);
+  };
+
+  const handleSaveTaxes = async (national, customs) => {
+    const res = await updateTaxes(gameState, national, customs);
+    if (res.gameState) setGameState(res.gameState);
+  };
+
+  const handleTogglePlan = async (planId) => {
+    const res = await toggleSocialPlan(gameState, planId);
+    if (res.gameState) setGameState(res.gameState);
+  };
+
+  const handleProposeLaw = async (lawId, negotiate) => {
+    const res = await proposeLaw(gameState, lawId, negotiate);
+    if (res.error) {
+      setCongressFeedback(res.error);
+      return;
+    }
+    if (res.gameState) setGameState(res.gameState);
+    if (res.message) setCongressFeedback(res.message);
+  };
+
+  const handleStartProject = async (projectId) => {
+    const res = await startSpecialProject(gameState, projectId);
+    if (res.error) {
+      setProjectFeedback(res.error);
+      return;
+    }
+    if (res.gameState) setGameState(res.gameState);
+    if (res.message) setProjectFeedback(res.message);
+  };
+
+  const handlePressConference = async () => {
+    const res = await holdPressConference(gameState);
+    if (res.gameState) setGameState(res.gameState);
   };
 
   const handleAdvanceMonth = async () => {
@@ -131,7 +179,11 @@ export default function App() {
 
   return (
     <main className="game-viewport">
-      <Scene3D sectors={gameState.sectors} onSelectSector={handleSelectSector} />
+      <Scene3D
+        sectors={gameState.sectors}
+        weather={gameState.weather}
+        onSelectSector={handleSelectSector}
+      />
 
       <div className="hud-layer">
         <HudPanel
@@ -142,20 +194,28 @@ export default function App() {
           onCloseSector={() => setSelectedSector(null)}
           onChangeSectorLevel={handleChangeSectorLevel}
           onAdvanceMonth={handleAdvanceMonth}
+          onOpenEconomy={() => setShowEconomy(true)}
+          onOpenCongress={() => {
+            setCongressFeedback('');
+            setShowCongress(true);
+          }}
+          onOpenProjects={() => {
+            setProjectFeedback('');
+            setShowProjects(true);
+          }}
           onOpenDiplomacy={() => {
             setDiplomacyFeedback('');
             setShowDiplomacy(true);
           }}
+          onPressConference={handlePressConference}
         />
 
         {showBriefing ? (
-          <SecretaryBriefing
-            lines={briefingLines}
-            onFinish={() => setShowBriefing(false)}
-          />
+          <SecretaryBriefing lines={briefingLines} onFinish={() => setShowBriefing(false)} />
         ) : (
           <div className="pixel-box hint-bar interactive">
-            Haz clic en los sectores de la izquierda o en los edificios 3D para subir/bajar su nivel •{' '}
+            Clic en sectores o edificios 3D para subir/bajar nivel • Usa Economía, Congreso, Obras y
+            Potencias •{' '}
             <button
               type="button"
               className="pixel-btn pixel-btn--secondary"
@@ -170,6 +230,30 @@ export default function App() {
 
       <EventModal event={gameState.activeEvent} onResolve={handleResolveEvent} />
 
+      <EconomyModal
+        isOpen={showEconomy}
+        gameState={gameState}
+        onSaveTaxes={handleSaveTaxes}
+        onTogglePlan={handleTogglePlan}
+        onClose={() => setShowEconomy(false)}
+      />
+
+      <CongressModal
+        isOpen={showCongress}
+        gameState={gameState}
+        feedback={congressFeedback}
+        onProposeLaw={handleProposeLaw}
+        onClose={() => setShowCongress(false)}
+      />
+
+      <ProjectsModal
+        isOpen={showProjects}
+        gameState={gameState}
+        feedback={projectFeedback}
+        onStartProject={handleStartProject}
+        onClose={() => setShowProjects(false)}
+      />
+
       <ForeignAidModal
         isOpen={showDiplomacy}
         month={gameState.month}
@@ -178,6 +262,23 @@ export default function App() {
         onRequestAid={handleRequestAid}
         onClose={() => setShowDiplomacy(false)}
       />
+
+      {gameState.victoryEnding && (
+        <div className="modal-backdrop interactive" role="dialog" aria-modal="true">
+          <div className="pixel-box modal-card">
+            <span className="setup-badge" style={{ color: '#22c55e', borderColor: '#14532d' }}>
+              MANDATO COMPLETADO // MES 36
+            </span>
+            <h2 className="modal-title" style={{ color: '#22c55e' }}>
+              {gameState.victoryEnding.title}
+            </h2>
+            <p className="modal-desc">{gameState.victoryEnding.desc}</p>
+            <button type="button" className="pixel-btn" onClick={() => setGameState(null)}>
+              JUGAR NUEVO MANDATO ▶
+            </button>
+          </div>
+        </div>
+      )}
 
       {gameState.gameOverReason && (
         <div className="modal-backdrop interactive" role="dialog" aria-modal="true">
@@ -189,11 +290,7 @@ export default function App() {
               COLAPSO PRESIDENCIAL
             </h2>
             <p className="modal-desc">{gameState.gameOverReason}</p>
-            <button
-              type="button"
-              className="pixel-btn"
-              onClick={() => setGameState(null)}
-            >
+            <button type="button" className="pixel-btn" onClick={() => setGameState(null)}>
               REINICIAR MANDATO ▶
             </button>
           </div>

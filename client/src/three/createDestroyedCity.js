@@ -858,6 +858,34 @@ export function createDestroyedCity(container, onSelectSector) {
     });
   };
 
+  const updateWeather = (weatherId = 'despejado') => {
+    if (weatherId === 'sudestada') {
+      scene.background.set('#1a2330');
+      scene.fog.color.set('#1a2330');
+      scene.fog.density = 0.0068;
+      sunLight.color.set('#93c5fd');
+      canalWater.position.y = -0.05; // sube el nivel del río
+    } else if (weatherId === 'ola_calor') {
+      scene.background.set('#3b2820');
+      scene.fog.color.set('#3b2820');
+      scene.fog.density = 0.0045;
+      sunLight.color.set('#fb923c');
+      canalWater.position.y = -0.5;
+    } else if (weatherId === 'ceniza') {
+      scene.background.set('#2c2c2c');
+      scene.fog.color.set('#343434');
+      scene.fog.density = 0.0085;
+      sunLight.color.set('#cbd5e1');
+      canalWater.position.y = -0.5;
+    } else {
+      scene.background.set('#272932');
+      scene.fog.color.set('#272932');
+      scene.fog.density = 0.0042;
+      sunLight.color.set('#f6d7a7');
+      canalWater.position.y = -0.5;
+    }
+  };
+
   const handlePointerDown = (e) => {
     pointerDownPos = { x: e.clientX, y: e.clientY };
   };
@@ -918,6 +946,7 @@ export function createDestroyedCity(container, onSelectSector) {
 
   return {
     updateSectors,
+    updateWeather,
     cleanup: () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
