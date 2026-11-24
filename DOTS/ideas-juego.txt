@@ -256,3 +256,85 @@ Posibles victorias:
     votaciones del Congreso, actualiza relaciones diplomaticas y dispara
     eventos aleatorios desde el servidor.
 ================================================================================
+
+
+14. AMBIENTACION: BUENOS AIRES APOCALIPTICO Y BARRIOS
+----------------------------------------------------
+La ciudad ficticia toma identidad propia inspirada en Buenos Aires en ruinas,
+donde cada zona tiene valor estrategico y jugable:
+- Microcentro y Plaza de Mayo (Casa Rosada y Cabildo): Centro politico.
+- Congreso y Balvanera: Sede legislativa donde marchan los manifestantes.
+- Puerto Madero y Costanera: Diques, Puente de la Mujer y salida al rio.
+- Retiro: Terminal ferroviaria y conexion logistica con el resto del pais.
+- La Boca y Sur (Caminito, La Bombonera): Barrios populares vulnerables a
+  sudestadas, inundaciones y crisis sanitarias.
+- Boedo / Oeste (San Lorenzo, Abasto): Corazon comercial y barrial.
+
+
+15. EVOLUCION VISUAL POR ETAPAS (DE RUINAS A FUTURISTA)
+-------------------------------------------------------
+A medida que el jugador invierte en la reconstruccion, los edificios 3D cambian:
+- El Obelisco: De punta quebrada con hierros oxidados -> piedra limpia
+  iluminada -> faro holografico de comunicaciones.
+- Subte Porteno: De boca inundada con enredaderas -> estaciones operativas
+  con trenes -> capsulas magneticas con neon cian.
+- Puerto Madero: De agua verde contaminada y puente caido -> diques limpios
+  con buques de carga -> megapuerto automatizado con gruas roboticas.
+- Estadios (La Bombonera / Monumental / San Lorenzo): De canchas con barro
+  y charcos -> centros de evacuacion y luego estadios activos para eventos
+  masivos que disparan la aprobacion ciudadana.
+
+
+16. CLIMA DINAMICO Y CATASTROFES ESTACIONALES
+---------------------------------------------
+- Sudestada e inundaciones: Afectan especialmente a La Boca, Puerto Madero
+  y los tuneles del Subte si no hay obras de drenaje.
+- Olas de calor de verano: Aumentan el consumo electrico; si la Red Electrica
+  esta en nivel bajo, provoca apagones masivos y caida de produccion.
+- Tormentas de ceniza / lluvia acida: Desgastan la infraestructura y exigen
+  mayor gasto en Bomberos y Hospitales.
+
+
+17. MEDIOS DE COMUNICACION Y OPOSICION POLITICA
+-----------------------------------------------
+- Noticiero / Diario Pixel Art ("El Cronista de Ceniza"): Al final de cada
+  mes muestra titulares satiricos o alarmistas segun tus decisiones.
+- Conferencias de Prensa / Cadena Nacional: Permite explicar medidas duras
+  (como subir impuestos o bajar un sector) para amortiguar la perdida de
+  aprobacion, con costo politico o monetario.
+
+
+18. MERCADO NEGRO, GREMIOS Y SINDICATOS
+---------------------------------------
+- Si los impuestos aduaneros o nacionales son excesivos y la Policia esta
+  en nivel bajo, crece el contrabando en el Puerto y se recauda menos.
+- Gremios activos (Transporte, Portuarios, Salud): Si sus sectores sufren
+  recortes continuos, pueden convocar paros generales hasta negociar un
+  acuerdo o aprobar una ley en el Congreso.
+
+
+19. OBRAS ESPECIALES Y FINALES MULTIPLES
+----------------------------------------
+Proyectos unicos de largo plazo (varios meses de construccion):
+- "Muro Anti-Sudestada en Costanera": Protege el Puerto y el Sur de eventos
+  climaticos.
+- "Red Ferroviaria Retiro-Constitucion": Reactiva el comercio nacional.
+- "Polo Cientifico UBA": Reduce costos de mejoras Nivel 3 (Futurista).
+
+Finales segun estilo de gobierno al completar los 36 meses:
+- Final Visionario: Ciudad futurista con finanzas sanas.
+- Final Austero: Poca deuda y orden, pero con servicios basicos.
+- Final Diplomatico: Reconstruida gracias a alianzas con potencias externas.
+- Derrota Clasica: "Escape en Helicoptero" desde el techo de Casa Rosada si
+  la aprobacion y el orden colapsan simultaneamente.
+
+
+20. MODOS DE JUEGO Y REJUGABILIDAD
+----------------------------------
+- Modo Mandato (36 meses): Sobrevivir y reconstruir Buenos Aires antes de
+  las proximas elecciones presidenciales.
+- Modo Supervivencia Infinita: Seguir gobernando tras reconstruir la ciudad
+  enfrentando crisis globales cada vez mas intensas.
+- Desafios Especiales: "Sin Deuda Externa", "Cero Impuestos Aduaneros" o
+  "Recuperacion Relampago".
+================================================================================
