@@ -220,7 +220,60 @@ export const SPECIAL_PROJECTS = [
     detail: 'Eventos deportivos y culturales masivos. +16% Aprobación y +$45k/mes.',
     effects: { approval: 16, monthlyIncomeDelta: 45 },
   },
+  {
+    id: 'restauracion_obelisco',
+    name: 'Faro Holográfico del Obelisco',
+    cost: 290,
+    monthsRequired: 2,
+    detail: 'Restaura el monumento central como símbolo de unidad. +15% Aprobación y +8% Congreso.',
+    effects: { approval: 15, congressSupport: 8 },
+  },
+  {
+    id: 'autopista_elevada',
+    name: 'Autopista Elevada 9 de Julio',
+    cost: 440,
+    monthsRequired: 3,
+    detail: 'Descongestiona el tránsito metropolitano. +$90k/mes ingresos y +6% Orden.',
+    effects: { monthlyIncomeDelta: 90, order: 6 },
+  },
+  {
+    id: 'saneamiento_riachuelo',
+    name: 'Planta de Saneamiento del Riachuelo',
+    cost: 370,
+    monthsRequired: 3,
+    detail: 'Limpia las aguas del sur y reduce brotes sanitarios. +12% Aprobación y +8% Orden.',
+    effects: { approval: 12, order: 8 },
+  },
+  {
+    id: 'central_solar_costanera',
+    name: 'Parque Solar Costanera Sur',
+    cost: 350,
+    monthsRequired: 2,
+    detail: 'Energía limpia auxiliar. -$55k/mes gastos fijos estatales y +5% Aprobación.',
+    effects: { monthlyExpensesDelta: -55, approval: 5 },
+  },
+  {
+    id: 'reapertura_colon',
+    name: 'Gran Reapertura del Teatro Colón',
+    cost: 260,
+    monthsRequired: 2,
+    detail: 'Atrae turismo y prestigio internacional. +14% Aprobación y +$40k/mes.',
+    effects: { approval: 14, monthlyIncomeDelta: 40 },
+  },
 ];
+
+export function pickProjectsAgenda(completedProjects = [], activeProjectId = null, excludeIds = []) {
+  const remaining = SPECIAL_PROJECTS.filter(
+    (p) => !completedProjects.includes(p.id) && p.id !== activeProjectId
+  );
+  const fresh = remaining.filter((p) => !excludeIds.includes(p.id));
+  const pool = fresh.length >= 3 ? [...fresh] : [...remaining];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 3).map((p) => p.id);
+}
 
 export const WEATHERS = [
   { id: 'despejado', name: 'Nublado Estable', effectText: 'Sin penalizaciones climáticas.' },

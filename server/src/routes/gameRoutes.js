@@ -6,6 +6,7 @@ import {
   CONGRESS_LAWS,
   pickCongressAgenda,
   SPECIAL_PROJECTS,
+  pickProjectsAgenda,
   WEATHERS,
   RANDOM_EVENTS,
   FOREIGN_POWERS,
@@ -102,7 +103,10 @@ router.post('/game/start', (req, res) => {
     passedLaws: [],
     congressAgenda: pickCongressAgenda([], []),
     congressNextRotationMonth: 4,
+    congressBoostUsedThisMonth: false,
     completedProjects: [],
+    projectsAgenda: pickProjectsAgenda([], null, []),
+    projectsNextRotationMonth: 4,
     activeProject: null,
     weather: WEATHERS[0],
     newsHeadline: `EL CRONISTA DE CENIZA: ${cleanName.toUpperCase()} ASUME EN UNA BUENOS AIRES DEVASTADA.`,
@@ -260,6 +264,44 @@ router.post('/game/law', (req, res) => {
   });
 });
 
+router.post('/game/congress/boost', (req, res) => {
+  if (!currentGameState) return res.status(404).json({ error: 'No hay partida.' });
+  if (currentGameState.congressBoostUsedThisMonth) {
+    return res.status(400).json({ error: 'Ya realizaste una gestión parlamentaria este mes.' });
+  }
+  const { method } = req.body || {};
+
+  if (method === 'dialogo') {
+    if (currentGameState.stats.treasury < 50) {
+      return res.status(400).json({ error: 'Necesitas $50k para la Ronda de Diálogo.' });
+    }
+    currentGameState.stats.treasury -= 50;
+    currentGameState.stats.congressSupport = clamp(currentGameState.stats.congressSupport + 12);
+    currentGameState.newsHeadline = 'EL CRONISTA: ACUERDO DE DIÁLOGO SUMA APOYO EN EL CONGRESO (+12%).';
+  } else if (method === 'pacto') {
+    if (currentGameState.stats.treasury < 110) {
+      return res.status(400).json({ error: 'Necesitas $110k para el Pacto de Gobernabilidad.' });
+    }
+    currentGameState.stats.treasury -= 110;
+    currentGameState.stats.congressSupport = clamp(currentGameState.stats.congressSupport + 25);
+    currentGameState.stats.order = clamp(currentGameState.stats.order + 3);
+    currentGameState.newsHeadline = 'EL CRONISTA: HISTÓRICO PACTO DE GOBERNABILIDAD EN EL CONGRESO (+25%).';
+  } else if (method === 'concesion') {
+    currentGameState.stats.congressSupport = clamp(currentGameState.stats.congressSupport + 10);
+    currentGameState.stats.approval = clamp(currentGameState.stats.approval - 4);
+    currentGameState.newsHeadline = 'EL CRONISTA: CONCESIÓN DE GABINETE RECOMPONE VOTOS LEGISLATIVOS (+10%).';
+  } else {
+    return res.status(400).json({ error: 'Método inválido.' });
+  }
+
+  currentGameState.congressBoostUsedThisMonth = true;
+  checkGameOverOrVictory(currentGameState);
+  return res.json({
+    gameState: currentGameState,
+    message: `Apoyo del Congreso actualizado a ${currentGameState.stats.congressSupport}%.`,
+  });
+});
+
 router.post('/game/project', (req, res) => {
   if (!currentGameState) return res.status(404).json({ error: 'No hay partida.' });
   const { projectId } = req.body || {};
@@ -313,6 +355,7 @@ router.post('/game/next-month', (_req, res) => {
   currentGameState.stats.treasury += net;
   currentGameState.month += 1;
   currentGameState.pressUsedThisMonth = false;
+  currentGameState.congressBoostUsedThisMonth = false;
 
   // Rotación automática de propuestas del Congreso cada 3 meses
   if (currentGameState.month >= currentGameState.congressNextRotationMonth) {
@@ -324,6 +367,16 @@ router.post('/game/next-month', (_req, res) => {
     currentGameState.newsHeadline = `EL CRONISTA: EL CONGRESO RENUEVA SU AGENDA LEGISLATIVA (MES ${currentGameState.month}).`;
   }
 
+  // Rotación automática de Obras Especiales cada 3 meses
+  if (currentGameState.month >= currentGameState.projectsNextRotationMonth) {
+    currentGameState.projectsAgenda = pickProjectsAgenda(
+      currentGameState.completedProjects,
+      currentGameState.activeProject?.id || null,
+      currentGameState.projectsAgenda
+    );
+    currentGameState.projectsNextRotationMonth = currentGameState.month + 3;
+  }
+
   // Avance de Obra Especial en curso
   if (currentGameState.activeProject) {
     currentGameState.activeProject.monthsLeft -= 1;
@@ -333,6 +386,12 @@ router.post('/game/next-month', (_req, res) => {
         currentGameState.completedProjects.push(done.id);
         const fx = done.effects;
         if (fx.monthlyIncomeDelta) currentGameState.stats.monthlyIncome += fx.monthlyIncomeDelta;
+        if (fx.monthlyExpensesDelta) {
+          currentGameState.stats.monthlyExpenses = Math.max(
+            0,
+            currentGameState.stats.monthlyExpenses + fx.monthlyExpensesDelta
+          );
+        }
         if (fx.order) currentGameState.stats.order = clamp(currentGameState.stats.order + fx.order);
         if (fx.approval) currentGameState.stats.approval = clamp(currentGameState.stats.approval + fx.approval);
         if (fx.congressSupport) {

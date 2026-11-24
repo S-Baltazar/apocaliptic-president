@@ -16,6 +16,7 @@ import {
   updateTaxes,
   toggleSocialPlan,
   proposeLaw,
+  boostCongressSupport,
   startSpecialProject,
   holdPressConference,
   advanceMonth,
@@ -119,6 +120,16 @@ export default function App() {
 
   const handleProposeLaw = async (lawId, negotiate) => {
     const res = await proposeLaw(gameState, lawId, negotiate);
+    if (res.error) {
+      setCongressFeedback(res.error);
+      return;
+    }
+    if (res.gameState) setGameState(res.gameState);
+    if (res.message) setCongressFeedback(res.message);
+  };
+
+  const handleBoostCongress = async (method) => {
+    const res = await boostCongressSupport(gameState, method);
     if (res.error) {
       setCongressFeedback(res.error);
       return;
@@ -243,6 +254,7 @@ export default function App() {
         gameState={gameState}
         feedback={congressFeedback}
         onProposeLaw={handleProposeLaw}
+        onBoostCongress={handleBoostCongress}
         onClose={() => setShowCongress(false)}
       />
 

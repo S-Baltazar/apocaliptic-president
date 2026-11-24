@@ -5,6 +5,7 @@ import {
   CONGRESS_LAWS,
   pickCongressAgenda,
   SPECIAL_PROJECTS,
+  pickProjectsAgenda,
   WEATHERS,
   RANDOM_EVENTS,
   FOREIGN_POWERS,
@@ -51,7 +52,10 @@ export async function startGameSession(playerName, presidentId, gameMode = 'mand
       passedLaws: [],
       congressAgenda: pickCongressAgenda([], []),
       congressNextRotationMonth: 4,
+      congressBoostUsedThisMonth: false,
       completedProjects: [],
+      projectsAgenda: pickProjectsAgenda([], null, []),
+      projectsNextRotationMonth: 4,
       activeProject: null,
       weather: WEATHERS[0],
       newsHeadline: `EL CRONISTA DE CENIZA: ${playerName.trim().toUpperCase()} ASUME EN BUENOS AIRES.`,
@@ -166,6 +170,28 @@ export function proposeLaw(currentState, lawId, negotiate = false) {
   });
 }
 
+export function boostCongressSupport(currentState, method) {
+  return postAction('/api/game/congress/boost', { method }, () => {
+    const next = structuredClone(currentState);
+    if (next.congressBoostUsedThisMonth) return { error: 'Ya gestionaste el Congreso este mes.' };
+    if (method === 'dialogo') {
+      if (next.stats.treasury < 50) return { error: 'Necesitas $50k.' };
+      next.stats.treasury -= 50;
+      next.stats.congressSupport = clamp(next.stats.congressSupport + 12);
+    } else if (method === 'pacto') {
+      if (next.stats.treasury < 110) return { error: 'Necesitas $110k.' };
+      next.stats.treasury -= 110;
+      next.stats.congressSupport = clamp(next.stats.congressSupport + 25);
+      next.stats.order = clamp(next.stats.order + 3);
+    } else {
+      next.stats.congressSupport = clamp(next.stats.congressSupport + 10);
+      next.stats.approval = clamp(next.stats.approval - 4);
+    }
+    next.congressBoostUsedThisMonth = true;
+    return { gameState: next, message: `Apoyo del Congreso: ${next.stats.congressSupport}%.` };
+  });
+}
+
 export function startSpecialProject(currentState, projectId) {
   return postAction('/api/game/project', { projectId }, () => {
     const next = structuredClone(currentState);
@@ -195,9 +221,18 @@ export async function advanceMonth(currentState) {
     next.stats.treasury += next.stats.monthlyIncome - next.stats.monthlyExpenses;
     next.month += 1;
     next.pressUsedThisMonth = false;
+    next.congressBoostUsedThisMonth = false;
     if (next.month >= (next.congressNextRotationMonth || 4)) {
       next.congressAgenda = pickCongressAgenda(next.passedLaws, next.congressAgenda);
       next.congressNextRotationMonth = next.month + 3;
+    }
+    if (next.month >= (next.projectsNextRotationMonth || 4)) {
+      next.projectsAgenda = pickProjectsAgenda(
+        next.completedProjects,
+        next.activeProject?.id || null,
+        next.projectsAgenda
+      );
+      next.projectsNextRotationMonth = next.month + 3;
     }
     next.weather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
     if (!next.activeEvent && Math.random() < 0.75) {
