@@ -27,7 +27,7 @@ router.post('/game/start', (req, res) => {
   currentGameState = {
     playerName: cleanName,
     president: chosenPresident,
-    cityName: 'Nueva Ceniza',
+    cityName: 'Buenos Aires',
     month: 1,
     stats: { ...chosenPresident.startingStats },
     sectors: INITIAL_SECTORS.map((s) => ({ ...s })),

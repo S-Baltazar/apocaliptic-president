@@ -20,7 +20,7 @@ export default function PresidentSelect({ presidents, onStartGame, isSubmitting 
     <div className="setup-screen">
       <form className="setup-container" onSubmit={handleSubmit}>
         <header className="pixel-box setup-header">
-          <span className="setup-badge">PROTOCOLO DE EMERGENCIA // NUEVA CENIZA</span>
+          <span className="setup-badge">PROTOCOLO DE EMERGENCIA // BUENOS AIRES</span>
           <h1 className="setup-title">PRESIDENCIA APOCALÍPTICA</h1>
           <p className="setup-subtitle">
             La ciudad está en ruinas. Ingresa tu nombre y elige qué presidente serás.

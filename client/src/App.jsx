@@ -59,8 +59,8 @@ export default function App() {
           />
         ) : (
           <div className="pixel-box hint-bar interactive">
-            Arrastra para rotar la ciudad destruida • Haz clic en un edificio (Subte, Puerto,
-            Hospital, Energía o Comisaría) para inspeccionarlo •{' '}
+            Arrastra para rotar / clic derecho para moverte por Buenos Aires • Haz clic en Casa Rosada,
+            Congreso, Puerto Madero, Subte, Hospital, Energía o Comisaría •{' '}
             <button
               type="button"
               className="pixel-btn pixel-btn--secondary"

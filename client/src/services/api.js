@@ -26,7 +26,7 @@ export async function startGameSession(playerName, presidentId) {
     return {
       playerName: playerName.trim(),
       president: chosen,
-      cityName: 'Nueva Ceniza',
+      cityName: 'Buenos Aires',
       month: 1,
       stats: { ...chosen.startingStats },
       sectors: INITIAL_SECTORS_FALLBACK.map((s) => ({ ...s })),

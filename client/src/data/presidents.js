@@ -96,9 +96,9 @@ export const INITIAL_SECTORS_FALLBACK = [
 
 export function buildSecretaryBriefing(playerName, president) {
   return [
-    `Bienvenido/a, Presidente ${playerName} (${president.title}). Soy Clara Vance, su Secretaria de Gobierno. Lamento recibirlo en estas condiciones: el colapso dejó a Nueva Ceniza en ruinas.`,
-    `Como puede ver en el mapa, el Subte Metropolitano y el Puerto Comercial están destruidos ($0k/mes). La Red Eléctrica y el Hospital Central operan apenas en estado de emergencia, mientras la Policía y los Bomberos no dan abasto.`,
+    `Bienvenido/a, Presidente ${playerName} (${president.title}). Soy Clara Vance, su Secretaria de Gobierno. Lamento recibirlo en estas condiciones: el colapso dejó a Buenos Aires en ruinas.`,
+    `Frente a la Casa Rosada y el Cabildo, el Obelisco tiene su cima quebrada, la cúpula del Congreso está dañada y el Puente de la Mujer en Puerto Madero colapsó sobre el río contaminado. El Subte Porteño también está fuera de servicio ($0k/mes).`,
     `Atención a las cuentas: contamos con $${president.startingStats.treasury}k en tesorería. Cada nivel de mejora suma un costo fijo mensual. Si intenta volver todo futurista de golpe ($400k/mes por sector), iremos a la quiebra.`,
-    `Podrá subir o bajar el nivel de las instalaciones según la caja, ajustar impuestos nacionales y aduaneros, ofrecer planes sociales, negociar leyes en el Congreso y tratar con otros países. ¡Explore la ciudad haciendo clic en los edificios destruidos!`,
+    `Podrá subir o bajar el nivel de las instalaciones según la caja, ajustar impuestos nacionales y aduaneros, ofrecer planes sociales, negociar leyes en el Congreso y tratar con otros países. ¡Explore Buenos Aires haciendo clic en los edificios emblemáticos!`,
   ];
 }
