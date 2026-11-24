@@ -57,7 +57,7 @@ const SECTOR_METADATA = {
     status: 'Nivel 1 — Mínimo',
     monthlyCost: 25,
     description:
-      'Cuartel conjunto de policía y bomberos. Si recortas demasiado su presupuesto, los saqueos e incendios destruirán otros edificios.',
+      'Comisaría con patrullero dañado y cuartel de bomberos. Si recortas demasiado su presupuesto, los saqueos e incendios destruirán otros edificios.',
   },
 };
 
@@ -66,19 +66,19 @@ export function createDestroyedCity(container, onSelectSector) {
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#272932');
-  scene.fog = new THREE.FogExp2('#272932', 0.0055);
+  scene.fog = new THREE.FogExp2('#272932', 0.0042);
 
   const width = container.clientWidth || window.innerWidth;
   const height = container.clientHeight || window.innerHeight;
 
-  const camera = new THREE.PerspectiveCamera(42, width / height, 0.5, 400);
-  camera.position.set(48, 40, 62);
+  const camera = new THREE.PerspectiveCamera(42, width / height, 0.5, 500);
+  camera.position.set(54, 46, 72);
 
   const renderer = new THREE.WebGLRenderer({
     antialias: false,
     powerPreference: 'high-performance',
   });
-  const PIXEL_SCALE = 0.48;
+  const PIXEL_SCALE = 0.5;
   renderer.setPixelRatio(PIXEL_SCALE);
   renderer.setSize(width, height, false);
   renderer.shadowMap.enabled = true;
@@ -90,26 +90,26 @@ export function createDestroyedCity(container, onSelectSector) {
   controls.dampingFactor = 0.08;
   controls.enablePan = true;
   controls.maxPolarAngle = Math.PI / 2.15;
-  controls.minDistance = 18;
-  controls.maxDistance = 125;
-  controls.target.set(-4, 1.5, 0);
+  controls.minDistance = 16;
+  controls.maxDistance = 175;
+  controls.target.set(-6, 1.5, 4);
 
-  // Iluminación realista apocalíptica
-  const hemiLight = new THREE.HemisphereLight('#c4cedb', '#3a3832', 1.1);
+  // Iluminación
+  const hemiLight = new THREE.HemisphereLight('#c8d2df', '#3a3832', 1.15);
   scene.add(hemiLight);
 
   const sunLight = new THREE.DirectionalLight('#f6d7a7', 1.45);
-  sunLight.position.set(55, 78, 42);
+  sunLight.position.set(70, 95, 55);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(2048, 2048);
-  sunLight.shadow.camera.left = -80;
-  sunLight.shadow.camera.right = 80;
-  sunLight.shadow.camera.top = 75;
-  sunLight.shadow.camera.bottom = -75;
+  sunLight.shadow.camera.left = -115;
+  sunLight.shadow.camera.right = 115;
+  sunLight.shadow.camera.top = 105;
+  sunLight.shadow.camera.bottom = -105;
   scene.add(sunLight);
 
-  const emergencyLight = new THREE.PointLight('#ef4444', 9, 26);
-  emergencyLight.position.set(-4, 6, -12);
+  const emergencyLight = new THREE.PointLight('#ef4444', 9, 28);
+  emergencyLight.position.set(10, 5, 16);
   scene.add(emergencyLight);
 
   const outlineMat = new THREE.LineBasicMaterial({ color: '#111318' });
@@ -123,13 +123,11 @@ export function createDestroyedCity(container, onSelectSector) {
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     if (outline) {
-      const edges = new THREE.EdgesGeometry(geo);
-      mesh.add(new THREE.LineSegments(edges, outlineMat));
+      mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), outlineMat));
     }
     return mesh;
   }
 
-  // Materiales texturizados reutilizables
   const mats = {
     asphalt: new THREE.MeshLambertMaterial({ map: tex.asphalt }),
     cobble: new THREE.MeshLambertMaterial({ map: tex.cobblestone }),
@@ -142,6 +140,16 @@ export function createDestroyedCity(container, onSelectSector) {
     glass: new THREE.MeshLambertMaterial({ map: tex.brokenGlassTower }),
     grass: new THREE.MeshLambertMaterial({ map: tex.overgrownGrass }),
     track: new THREE.MeshLambertMaterial({ map: tex.trainTrack }),
+    policeFacade: new THREE.MeshLambertMaterial({ map: tex.policeFacade }),
+    fireFacade: new THREE.MeshLambertMaterial({ map: tex.fireStationFacade }),
+    bomboneraStands: new THREE.MeshLambertMaterial({ map: tex.bomboneraStands }),
+    sanLorenzoStands: new THREE.MeshLambertMaterial({ map: tex.sanLorenzoStands }),
+    soccerPitch: new THREE.MeshLambertMaterial({ map: tex.soccerPitch }),
+    colectivoSide: new THREE.MeshLambertMaterial({ map: tex.colectivoSide }),
+    policeCarSide: new THREE.MeshLambertMaterial({ map: tex.policeCarSide }),
+    carBody: new THREE.MeshLambertMaterial({ map: tex.carBody }),
+    caminitoTin: new THREE.MeshLambertMaterial({ map: tex.caminitoTin }),
+    concreteRoof: new THREE.MeshLambertMaterial({ color: '#706e69' }),
   };
 
   const interactives = [];
@@ -154,96 +162,246 @@ export function createDestroyedCity(container, onSelectSector) {
     });
   }
 
+  // Helper: Auto realista pixel art (patrullero o civil abandonado)
+  function createCar(isPolice = false) {
+    const car = new THREE.Group();
+    const bodyMat = isPolice ? mats.policeCarSide : mats.carBody;
+    const roofColor = isPolice ? '#cfc9bc' : '#6b473b';
+    const chassis = makeBox(1.8, 0.65, 3.6, bodyMat);
+    chassis.position.y = 0.55;
+    const cabin = makeBox(1.55, 0.55, 1.8, [
+      bodyMat,
+      bodyMat,
+      new THREE.MeshLambertMaterial({ color: roofColor }),
+      new THREE.MeshLambertMaterial({ color: '#222' }),
+      new THREE.MeshLambertMaterial({ color: '#1b2029' }),
+      new THREE.MeshLambertMaterial({ color: '#1b2029' }),
+    ]);
+    cabin.position.set(0, 1.1, -0.1);
+    car.add(chassis, cabin);
+
+    // 4 ruedas
+    const wheelOffsets = [
+      [-0.9, 0.3, 1.05],
+      [0.9, 0.3, 1.05],
+      [-0.9, 0.3, -1.05],
+      [0.9, 0.3, -1.05],
+    ];
+    wheelOffsets.forEach(([wx, wy, wz]) => {
+      const wheel = makeBox(0.32, 0.6, 0.6, '#1a1b1f', false);
+      wheel.position.set(wx, wy, wz);
+      car.add(wheel);
+    });
+
+    if (isPolice) {
+      const sirenRed = makeBox(0.45, 0.2, 0.3, '#ef4444', false);
+      sirenRed.position.set(-0.25, 1.48, -0.1);
+      const sirenBlue = makeBox(0.45, 0.2, 0.3, '#3b82f6', false);
+      sirenBlue.position.set(0.25, 1.48, -0.1);
+      car.add(sirenRed, sirenBlue);
+    }
+    return car;
+  }
+
+  // Helper: Colectivo porteño oxidado + parada Metrobus
+  function createColectivo() {
+    const bus = new THREE.Group();
+    const busMats = [
+      mats.colectivoSide,
+      mats.colectivoSide,
+      new THREE.MeshLambertMaterial({ color: '#a89f8c' }),
+      new THREE.MeshLambertMaterial({ color: '#222' }),
+      new THREE.MeshLambertMaterial({ color: '#252a33' }),
+      new THREE.MeshLambertMaterial({ color: '#8f8675' }),
+    ];
+    const body = makeBox(2.0, 2.0, 5.4, busMats);
+    body.position.y = 1.35;
+    bus.add(body);
+
+    const wheels = [
+      [-1.02, 0.42, 1.65],
+      [1.02, 0.42, 1.65],
+      [-1.02, 0.42, -1.65],
+      [1.02, 0.42, -1.65],
+    ];
+    wheels.forEach(([wx, wy, wz]) => {
+      const w = makeBox(0.35, 0.84, 0.84, '#18191d', false);
+      w.position.set(wx, wy, wz);
+      bus.add(w);
+    });
+    return bus;
+  }
+
+  function createMetrobusStop(x, z) {
+    const stop = new THREE.Group();
+    const platform = makeBox(2.8, 0.3, 8.5, mats.cobble);
+    platform.position.y = 0.15;
+    const roof = makeBox(2.4, 0.22, 7.6, '#4d5d6b');
+    roof.position.set(0, 3.0, 0);
+    roof.rotation.z = 0.08;
+    const pillar1 = makeBox(0.25, 2.9, 0.25, '#3b424d', false);
+    pillar1.position.set(-0.9, 1.5, -3.2);
+    const pillar2 = makeBox(0.25, 2.9, 0.25, '#3b424d', false);
+    pillar2.position.set(-0.9, 1.5, 3.2);
+    const sign = makeBox(0.25, 0.75, 4.2, '#3b5978');
+    sign.position.set(-0.9, 3.5, 0);
+    stop.add(platform, roof, pillar1, pillar2, sign);
+    stop.position.set(x, 0, z);
+    scene.add(stop);
+  }
+
+  // Helper: Plaza con fuente seca (estilo plaza_fuente_seca.jpg)
+  function createDryFountainPlaza(x, z, size = 14) {
+    const plaza = new THREE.Group();
+    const floor = makeBox(size, 0.22, size, mats.cobble, false);
+    floor.position.y = 0.11;
+    const rim = new THREE.Mesh(
+      new THREE.CylinderGeometry(3.2, 3.4, 0.8, 12),
+      mats.limestone
+    );
+    rim.position.y = 0.5;
+    const basin = new THREE.Mesh(
+      new THREE.CylinderGeometry(2.6, 2.6, 0.5, 12),
+      mats.water
+    );
+    basin.position.y = 0.68;
+    const tier = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.7, 1.1, 2.2, 8),
+      mats.limestone
+    );
+    tier.position.y = 1.6;
+    plaza.add(floor, rim, basin, tier);
+
+    // Bancos de madera y árboles secos
+    [
+      [-4.8, 0, 0],
+      [4.8, 0, 0],
+      [0, -4.8, Math.PI / 2],
+      [0, 4.8, Math.PI / 2],
+    ].forEach(([bx, bz, rot]) => {
+      const bench = makeBox(0.7, 0.65, 2.4, '#6b472b');
+      bench.position.set(bx, 0.45, bz);
+      bench.rotation.y = rot;
+      plaza.add(bench);
+    });
+    plaza.position.set(x, 0, z);
+    scene.add(plaza);
+  }
+
   // =========================================================================
-  // 1. TERRENO EXPANDIDO DE BUENOS AIRES (150 x 130) + RÍO DE LA PLATA
+  // 1. TERRENO SUPER EXPANDIDO DE BUENOS AIRES (210 x 190) + RÍO DE LA PLATA
   // =========================================================================
-  const cityGround = makeBox(112, 1.4, 128, mats.cobble, false);
-  cityGround.position.set(-18, -0.7, 0);
+  const cityGround = makeBox(152, 1.6, 184, mats.cobble, false);
+  cityGround.position.set(-28, -0.8, 0);
   scene.add(cityGround);
 
-  // Dique de Puerto Madero + Río de la Plata
-  const canalWater = makeBox(20, 0.5, 128, mats.water, false);
-  canalWater.position.set(48, -0.45, 0);
+  // Dique de Puerto Madero + Costanera Sur
+  const canalWater = makeBox(24, 0.6, 184, mats.water, false);
+  canalWater.position.set(60, -0.5, 0);
   scene.add(canalWater);
 
-  const eastDock = makeBox(20, 1.4, 128, mats.cobble, false);
-  eastDock.position.set(68, -0.7, 0);
+  const eastDock = makeBox(28, 1.6, 184, mats.cobble, false);
+  eastDock.position.set(86, -0.8, 0);
   scene.add(eastDock);
 
-  // Bordes de ladrillo rojo de Puerto Madero
-  const brickLeft = makeBox(1.8, 1.8, 128, mats.brick);
-  brickLeft.position.set(38, -0.2, 0);
+  const brickLeft = makeBox(2.0, 2.0, 184, mats.brick);
+  brickLeft.position.set(48, -0.2, 0);
   scene.add(brickLeft);
 
-  const brickRight = makeBox(1.8, 1.8, 128, mats.brick);
-  brickRight.position.set(58, -0.2, 0);
+  const brickRight = makeBox(2.0, 2.0, 184, mats.brick);
+  brickRight.position.set(72, -0.2, 0);
   scene.add(brickRight);
 
-  // Avenidas principales asfaltadas
+  // Red de Avenidas Porteñas
   const roads = [
-    [-4, 0, 9.5, 126],     // Av. 9 de Julio (N-S)
-    [28, 0, 6.0, 126],     // Av. Paseo Colón / Madero (N-S)
-    [-34, 0, 5.5, 126],    // Av. Callao / Entre Ríos (N-S)
-    [-18, 0, 110, 6.8],    // Av. de Mayo (E-O)
-    [-18, -22, 110, 5.5],  // Av. Corrientes (E-O)
-    [-18, -44, 110, 5.0],  // Av. del Libertador / Retiro (E-O)
-    [-18, 22, 110, 5.2],   // Av. San Juan (E-O)
-    [-18, 44, 110, 5.0],   // Av. Suárez / La Boca (E-O)
+    [-4, 0, 10.5, 180],     // Av. 9 de Julio
+    [34, 0, 6.2, 180],      // Av. Paseo Colón / Madero
+    [-38, 0, 6.0, 180],     // Av. Callao / Entre Ríos
+    [-74, 0, 5.5, 180],     // Av. Boedo / Medrano
+    [-28, 0, 148, 7.0],     // Av. de Mayo
+    [-28, -24, 148, 5.8],   // Av. Corrientes
+    [-28, -52, 148, 5.5],   // Av. del Libertador
+    [-28, 24, 148, 5.5],    // Av. San Juan
+    [-28, 52, 148, 5.2],    // Av. Suárez / Almirante Brown
+    [-28, 76, 148, 5.0],    // Borde Sur / Riachuelo
   ];
   roads.forEach(([x, z, w, d]) => {
-    const r = makeBox(w, 0.12, d, mats.asphalt, false);
-    r.position.set(x, 0.06, z);
+    const r = makeBox(w, 0.14, d, mats.asphalt, false);
+    r.position.set(x, 0.07, z);
     scene.add(r);
   });
 
-  // Bulevar central verde de Av. 9 de Julio + Metrobus y colectivos abandonados
-  const av9Median = makeBox(1.8, 0.18, 122, mats.grass, false);
-  av9Median.position.set(-4, 0.09, 0);
+  // Bulevar de Av. 9 de Julio + Metrobus + Colectivos Porteños + Autos Abandonados
+  const av9Median = makeBox(1.8, 0.2, 174, mats.grass, false);
+  av9Median.position.set(-4, 0.1, 0);
   scene.add(av9Median);
 
-  [-30, -6, 12, 32].forEach((zPos, i) => {
-    const bus = makeBox(1.5, 1.6, 4.2, i % 2 === 0 ? '#1d4ed8' : '#b91c1c');
-    bus.position.set(-1.6, 0.9, zPos);
-    bus.rotation.y = (i % 2 === 0 ? 1 : -1) * 0.12;
+  createMetrobusStop(-1.2, -34);
+  createMetrobusStop(-1.2, 12);
+
+  [
+    [-1.4, -34, 0.08],
+    [-1.4, 12, -0.06],
+    [-6.8, -10, Math.PI + 0.12],
+    [-6.8, 36, Math.PI - 0.1],
+  ].forEach(([bx, bz, rot]) => {
+    const bus = createColectivo();
+    bus.position.set(bx, 0, bz);
+    bus.rotation.y = rot;
     scene.add(bus);
   });
 
+  // Autos civiles abandonados en distintas avenidas
+  [
+    [12, 0.5, Math.PI / 2 + 0.15],
+    [-20, -23.5, Math.PI / 2 - 0.1],
+    [33.5, -14, 0.2],
+    [-38, 16, -0.25],
+    [-16, 24.5, Math.PI / 2 + 0.2],
+    [34.5, 32, 0.12],
+    [-54, 0.8, Math.PI / 2 - 0.18],
+    [-38.5, -38, 0.15],
+  ].forEach(([cx, cz, rot]) => {
+    const car = createCar(false);
+    car.position.set(cx, 0, cz);
+    car.rotation.y = rot;
+    scene.add(car);
+  });
+
   // =========================================================================
-  // 2. PLAZA DE MAYO, CASA ROSADA Y EL CABILDO
+  // 2. PLAZA DE MAYO, CASA ROSADA Y CABILDO
   // =========================================================================
-  const plazaMayo = makeBox(18, 0.22, 18, mats.grass, false);
-  plazaMayo.position.set(10, 0.11, 0);
+  const plazaMayo = makeBox(20, 0.24, 20, mats.grass, false);
+  plazaMayo.position.set(12, 0.12, 0);
   scene.add(plazaMayo);
 
-  const piramideMayo = makeBox(1.4, 5.5, 1.4, '#d9d5c9');
-  piramideMayo.position.set(10, 2.8, 0);
+  const piramideMayo = makeBox(1.5, 5.8, 1.5, '#d9d5c9');
+  piramideMayo.position.set(12, 3.0, 0);
   scene.add(piramideMayo);
 
-  // Casa Rosada (Este de Plaza de Mayo)
   const casaRosada = new THREE.Group();
-  const crMain = makeBox(10, 6.2, 16, mats.rosada);
-  crMain.position.y = 3.1;
-  const crPortico = makeBox(2.8, 5.4, 6, mats.rosada);
-  crPortico.position.set(-5.4, 2.7, 0);
-  const crRoof = makeBox(9.6, 0.9, 15.2, '#4a4e54');
-  crRoof.position.y = 6.6;
-  const crHole = makeBox(4.2, 1.0, 5.6, '#18191d');
-  crHole.position.set(0.6, 6.7, 1.5);
-  [-3, 0, 3].forEach((zOff) => {
+  const crMain = makeBox(10.5, 6.4, 17, mats.rosada);
+  crMain.position.y = 3.2;
+  const crPortico = makeBox(2.8, 5.6, 6.4, mats.rosada);
+  crPortico.position.set(-5.6, 2.8, 0);
+  const crRoof = makeBox(10, 0.9, 16.2, '#4a4e54');
+  crRoof.position.y = 6.8;
+  const crHole = makeBox(4.4, 1.0, 6.0, '#18191d');
+  crHole.position.set(0.6, 6.9, 1.5);
+  [-3.2, 0, 3.2].forEach((zOff) => {
     const bar = makeBox(0.7, 1.0, 2.4, '#8b8d8e');
-    bar.position.set(-7.6, 0.5, zOff);
+    bar.position.set(-7.8, 0.5, zOff);
     casaRosada.add(bar);
   });
   casaRosada.add(crMain, crPortico, crRoof, crHole);
-  casaRosada.position.set(21, 0, 0);
+  casaRosada.position.set(26, 0, 0);
   scene.add(casaRosada);
   registerInteractive(casaRosada, 'casa_rosada');
 
-  // El Cabildo (Oeste de Plaza de Mayo)
   const cabildo = new THREE.Group();
-  const cabBody = makeBox(5.2, 4.4, 12, '#d9d5c9');
+  const cabBody = makeBox(5.2, 4.4, 12.5, '#d9d5c9');
   cabBody.position.y = 2.2;
-  const cabRoof = makeBox(5.4, 0.8, 12.2, mats.brick);
+  const cabRoof = makeBox(5.4, 0.8, 12.7, mats.brick);
   cabRoof.position.y = 4.8;
   const cabTower = makeBox(3.4, 4.8, 3.4, '#d9d5c9');
   cabTower.position.y = 7.0;
@@ -252,35 +410,35 @@ export function createDestroyedCity(container, onSelectSector) {
   const cabFlag = makeBox(0.2, 1.8, 2.2, '#62b5e5');
   cabFlag.position.set(0, 9.2, 2.4);
   cabildo.add(cabBody, cabRoof, cabTower, cabCupola, cabFlag);
-  cabildo.position.set(1, 0, 0);
+  cabildo.position.set(2, 0, 0);
   scene.add(cabildo);
 
   // =========================================================================
   // 3. EL OBELISCO EN RUINAS + BOCAS DE SUBTE PORTEÑO
   // =========================================================================
   const obelisco = new THREE.Group();
-  const obBase = makeBox(7.2, 0.5, 7.2, mats.cobble);
+  const obBase = makeBox(7.6, 0.5, 7.6, mats.cobble);
   obBase.position.y = 0.25;
-  const obShaft1 = makeBox(2.8, 9.5, 2.8, '#c5bfb0');
-  obShaft1.position.y = 5.0;
-  const obShaft2 = makeBox(2.2, 7.2, 2.2, '#b3ada0');
-  obShaft2.position.y = 13.3;
+  const obShaft1 = makeBox(2.8, 9.8, 2.8, '#c5bfb0');
+  obShaft1.position.y = 5.1;
+  const obShaft2 = makeBox(2.2, 7.5, 2.2, '#b3ada0');
+  obShaft2.position.y = 13.7;
   const obBroken = makeBox(1.8, 1.6, 1.8, '#8f897d');
-  obBroken.position.set(0.1, 17.5, 0);
+  obBroken.position.set(0.1, 18.0, 0);
   obBroken.rotation.z = 0.08;
-  const rebar1 = makeBox(0.2, 1.8, 0.2, '#7c3f28', false);
-  rebar1.position.set(-0.3, 18.8, 0.2);
+  const rebar1 = makeBox(0.2, 2.0, 0.2, '#7c3f28', false);
+  rebar1.position.set(-0.3, 19.3, 0.2);
   rebar1.rotation.z = 0.16;
-  const obIvy = makeBox(0.7, 8.8, 0.7, '#436436');
-  obIvy.position.set(1.3, 5.2, 1.0);
+  const obIvy = makeBox(0.7, 9.2, 0.7, '#436436');
+  obIvy.position.set(1.3, 5.4, 1.0);
   obelisco.add(obBase, obShaft1, obShaft2, obBroken, rebar1, obIvy);
-  obelisco.position.set(-4, 0, -22);
+  obelisco.position.set(-4, 0, -24);
   scene.add(obelisco);
 
-  // Subte Porteño (2 bocas icónicas sobre Av. 9 de Julio)
   [
-    [-11.5, -12],
-    [-11.5, 11],
+    [-12, -13],
+    [-12, 13],
+    [-12, -38],
   ].forEach(([sx, sz]) => {
     const subte = new THREE.Group();
     const sBase = makeBox(5.2, 0.5, 5.8, mats.cobble);
@@ -301,24 +459,24 @@ export function createDestroyedCity(container, onSelectSector) {
   // 4. CONGRESO DE LA NACIÓN (Oeste de Av. de Mayo)
   // =========================================================================
   const congreso = new THREE.Group();
-  const congBase = makeBox(13, 5.6, 17, mats.limestone);
-  congBase.position.y = 2.8;
-  const congSteps = makeBox(3.2, 1.4, 9.0, '#9d9889');
-  congSteps.position.set(7.6, 0.7, 0);
-  const congPediment = makeBox(3.6, 2.6, 9.2, '#c6c0af');
-  congPediment.position.set(5.4, 6.8, 0);
-  const congDrum = makeBox(6.4, 3.2, 6.4, mats.limestone);
-  congDrum.position.set(0, 7.2, 0);
+  const congBase = makeBox(13.5, 5.8, 18, mats.limestone);
+  congBase.position.y = 2.9;
+  const congSteps = makeBox(3.4, 1.4, 9.4, '#9d9889');
+  congSteps.position.set(8.0, 0.7, 0);
+  const congPediment = makeBox(3.8, 2.6, 9.6, '#c6c0af');
+  congPediment.position.set(5.6, 7.0, 0);
+  const congDrum = makeBox(6.6, 3.4, 6.6, mats.limestone);
+  congDrum.position.set(0, 7.4, 0);
   const congDome = new THREE.Mesh(
-    new THREE.SphereGeometry(3.3, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.SphereGeometry(3.4, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2),
     mats.copper
   );
-  congDome.position.set(0, 8.8, 0);
+  congDome.position.set(0, 9.1, 0);
   congDome.castShadow = true;
   const domeHole = makeBox(2.1, 1.8, 2.1, '#2b241d');
-  domeHole.position.set(1.4, 10.0, 1.1);
+  domeHole.position.set(1.4, 10.3, 1.1);
   congreso.add(congBase, congSteps, congPediment, congDrum, congDome, domeHole);
-  congreso.position.set(-50, 0, 0);
+  congreso.position.set(-56, 0, 0);
   scene.add(congreso);
   registerInteractive(congreso, 'congreso');
 
@@ -326,31 +484,30 @@ export function createDestroyedCity(container, onSelectSector) {
   // 5. PUERTO MADERO, PUENTE DE LA MUJER Y TORRES MODERNAS (Este)
   // =========================================================================
   const puertoGroup = new THREE.Group();
-  const bridgeLeft = makeBox(9.2, 0.6, 2.8, '#e2e8f0');
-  bridgeLeft.position.set(42.8, 1.3, 6);
+  const bridgeLeft = makeBox(11.5, 0.65, 3.0, '#e2e8f0');
+  bridgeLeft.position.set(53.5, 1.35, 6);
   bridgeLeft.rotation.z = -0.14;
-  const bridgeRight = makeBox(8.6, 0.6, 2.8, '#cbd5e1');
-  bridgeRight.position.set(53.4, 1.2, 6);
+  const bridgeRight = makeBox(10.5, 0.65, 3.0, '#cbd5e1');
+  bridgeRight.position.set(66.5, 1.25, 6);
   bridgeRight.rotation.z = 0.16;
-  const mast = makeBox(0.8, 11.5, 0.8, '#f1f5f9');
-  mast.position.set(46.5, 5.6, 6);
+  const mast = makeBox(0.9, 13.0, 0.9, '#f1f5f9');
+  mast.position.set(58.0, 6.2, 6);
   mast.rotation.z = -0.45;
 
-  const dockWarehouse1 = makeBox(7.2, 4.2, 12, mats.brick);
-  dockWarehouse1.position.set(65, 2.1, -10);
-  const dockWarehouse2 = makeBox(7.2, 4.0, 11, mats.brick);
-  dockWarehouse2.position.set(65, 2.0, 16);
-  const crane = makeBox(1.1, 9.0, 1.1, '#b45309');
-  crane.position.set(60, 4.5, 24);
+  const dockWarehouse1 = makeBox(8.2, 4.4, 14, mats.brick);
+  dockWarehouse1.position.set(80, 2.2, -12);
+  const dockWarehouse2 = makeBox(8.2, 4.2, 13, mats.brick);
+  dockWarehouse2.position.set(80, 2.1, 18);
+  const crane = makeBox(1.2, 10.5, 1.2, '#b45309');
+  crane.position.set(74, 5.2, 28);
   crane.rotation.z = 0.22;
 
-  // Torres Gemelas y Torre Curva de Puerto Madero
-  const pmTower1 = makeBox(5.5, 17, 5.5, mats.glass);
-  pmTower1.position.set(68, 8.5, -34);
-  const pmTower2 = makeBox(5.5, 15, 5.5, mats.glass);
-  pmTower2.position.set(68, 7.5, -26);
-  const pmCurved = makeBox(6.0, 19, 5.0, mats.glass);
-  pmCurved.position.set(68, 9.5, 36);
+  const pmTower1 = makeBox(6.2, 20, 6.2, mats.glass);
+  pmTower1.position.set(84, 10, -40);
+  const pmTower2 = makeBox(6.2, 17, 6.2, mats.glass);
+  pmTower2.position.set(84, 8.5, -30);
+  const pmCurved = makeBox(6.8, 22, 5.4, mats.glass);
+  pmCurved.position.set(84, 11, 44);
   pmCurved.rotation.y = 0.25;
 
   puertoGroup.add(
@@ -368,179 +525,271 @@ export function createDestroyedCity(container, onSelectSector) {
   registerInteractive(puertoGroup, 'puerto');
 
   // =========================================================================
-  // 6. ZONA NORTE: TEATRO COLÓN, FACULTAD DE DERECHO, FLORALIS, RETIRO Y MONUMENTAL
+  // 6. COMISARÍA DESTRUIDA (con patrullero) Y CUARTEL DE BOMBEROS
   // =========================================================================
-  // Teatro Colón
+  const policeGroup = new THREE.Group();
+  const polMats = [
+    mats.ruined,
+    mats.ruined,
+    mats.concreteRoof,
+    mats.concreteRoof,
+    mats.policeFacade,
+    mats.ruined,
+  ];
+  const polBody = makeBox(10.5, 5.0, 7.6, polMats);
+  polBody.position.y = 2.5;
+  // Techo con ventilación y esquina rota
+  const polAc = makeBox(2.2, 0.9, 1.6, '#5c5e63');
+  polAc.position.set(-1.5, 5.45, -1.2);
+  // Barricadas frente a la comisaría
+  const polBar1 = makeBox(2.4, 0.85, 0.5, '#8b8d8e');
+  polBar1.position.set(-4.2, 0.45, 5.4);
+  const polBar2 = makeBox(2.4, 0.85, 0.5, '#8b8d8e');
+  polBar2.position.set(3.8, 0.45, 5.4);
+  // Patrullero destruido estacionado frente a la comisaría
+  const patrolCar = createCar(true);
+  patrolCar.position.set(0.5, 0, 5.8);
+  patrolCar.rotation.y = Math.PI / 2 - 0.18;
+
+  // Cuartel de Bomberos contiguo
+  const fireMats = [
+    mats.brick,
+    mats.brick,
+    mats.concreteRoof,
+    mats.concreteRoof,
+    mats.fireFacade,
+    mats.brick,
+  ];
+  const fireBody = makeBox(8.2, 4.6, 7.2, fireMats);
+  fireBody.position.set(10.2, 2.3, 0);
+
+  policeGroup.add(polBody, polAc, polBar1, polBar2, patrolCar, fireBody);
+  policeGroup.position.set(10, 0, 14);
+  scene.add(policeGroup);
+  registerInteractive(policeGroup, 'policia');
+
+  // =========================================================================
+  // 7. LA BOMBONERA (Forma de D fiel a la referencia, 3 bandejas + palcos + cancha)
+  // =========================================================================
+  const bombonera = new THREE.Group();
+  // Campo de juego con textura de césped, líneas, barro y charcos
+  const bocaField = makeBox(15, 0.25, 20, mats.soccerPitch, false);
+  bocaField.position.set(-1.2, 0.14, 0);
+  bombonera.add(bocaField);
+
+  // Arcos de fútbol oxidados
+  [-8.6, 8.6].forEach((gz) => {
+    const goal = makeBox(3.4, 1.2, 0.8, '#d4d0c5');
+    goal.position.set(-1.2, 0.7, gz);
+    bombonera.add(goal);
+  });
+
+  // 3 tribunas envolventes en forma de U (Oeste, Norte, Sur) con textura azul-amarillo-azul
+  const standWest = makeBox(4.2, 7.2, 26, mats.bomboneraStands);
+  standWest.position.set(-10.5, 3.6, 0);
+  const standNorth = makeBox(19, 7.2, 4.2, mats.bomboneraStands);
+  standNorth.position.set(-1.5, 3.6, -11.5);
+  const standSouth = makeBox(19, 7.2, 4.2, mats.bomboneraStands);
+  standSouth.position.set(-1.5, 3.6, 11.5);
+
+  // Pared vertical plana de los Palcos (Este) característica de La Bombonera
+  const palcosWall = makeBox(3.4, 9.2, 24, mats.ruined);
+  palcosWall.position.set(8.2, 4.6, 0);
+  const palcosCollapse = makeBox(2.2, 1.8, 5.0, '#3a2b24');
+  palcosCollapse.position.set(8.2, 9.4, -4);
+
+  bombonera.add(standWest, standNorth, standSouth, palcosWall, palcosCollapse);
+  bombonera.position.set(-54, 0, 62);
+  scene.add(bombonera);
+
+  // =========================================================================
+  // 8. ESTADIO DE SAN LORENZO (Nuevo Gasómetro - Suroeste / Boedo)
+  // =========================================================================
+  const sanLorenzo = new THREE.Group();
+  const slField = makeBox(15, 0.25, 20, mats.soccerPitch, false);
+  slField.position.y = 0.14;
+  sanLorenzo.add(slField);
+
+  const slN = makeBox(18, 5.6, 3.8, mats.sanLorenzoStands);
+  slN.position.set(0, 2.8, -11.5);
+  const slS = makeBox(18, 5.6, 3.8, mats.sanLorenzoStands);
+  slS.position.set(0, 2.8, 11.5);
+  const slW = makeBox(3.8, 5.6, 20, mats.sanLorenzoStands);
+  slW.position.set(-10.2, 2.8, 0);
+  const slE = makeBox(3.8, 5.6, 20, mats.sanLorenzoStands);
+  slE.position.set(10.2, 2.8, 0);
+  sanLorenzo.add(slN, slS, slW, slE);
+
+  // 4 torres de iluminación oxidadas
+  [
+    [-11.5, -12.5],
+    [11.5, -12.5],
+    [-11.5, 12.5],
+    [11.5, 12.5],
+  ].forEach(([tx, tz]) => {
+    const tower = makeBox(0.9, 12, 0.9, '#6b4232');
+    tower.position.set(tx, 6, tz);
+    const lamp = makeBox(2.6, 1.4, 0.6, '#9ca3af');
+    lamp.position.set(tx, 12.2, tz);
+    sanLorenzo.add(tower, lamp);
+  });
+  sanLorenzo.position.set(-88, 0, 36);
+  scene.add(sanLorenzo);
+
+  // =========================================================================
+  // 9. ZONA NORTE, OESTE Y SUR: COLÓN, FLORALIS, UBA, RETIRO, MONUMENTAL, CAMINITO
+  // =========================================================================
   const colon = new THREE.Group();
-  const colonBody = makeBox(11, 6.0, 12, mats.limestone);
-  colonBody.position.y = 3.0;
-  const colonRoof = makeBox(10.2, 1.8, 11.2, mats.copper);
-  colonRoof.position.y = 6.9;
+  const colonBody = makeBox(11.5, 6.2, 12.5, mats.limestone);
+  colonBody.position.y = 3.1;
+  const colonRoof = makeBox(10.6, 1.8, 11.6, mats.copper);
+  colonRoof.position.y = 7.1;
   colon.add(colonBody, colonRoof);
-  colon.position.set(-18, 0, -32);
+  colon.position.set(-20, 0, -36);
   scene.add(colon);
 
-  // Floralis Genérica (Parque Norte)
+  // Floralis Genérica
   const floralis = new THREE.Group();
   const pool = new THREE.Mesh(
-    new THREE.CylinderGeometry(6.5, 6.5, 0.5, 16),
+    new THREE.CylinderGeometry(7.0, 7.0, 0.5, 16),
     mats.water
   );
   pool.position.y = 0.25;
   floralis.add(pool);
   for (let i = 0; i < 5; i += 1) {
     const angle = (i / 6) * Math.PI * 2;
-    const petal = makeBox(1.4, 5.0, 0.4, '#94a3b8');
-    petal.position.set(Math.cos(angle) * 2.4, 2.6, Math.sin(angle) * 2.4);
+    const petal = makeBox(1.4, 5.2, 0.4, '#94a3b8');
+    petal.position.set(Math.cos(angle) * 2.5, 2.7, Math.sin(angle) * 2.5);
     petal.rotation.y = -angle;
     petal.rotation.z = 0.28;
     floralis.add(petal);
   }
-  const fallenPetal = makeBox(1.4, 4.2, 0.4, '#64748b');
+  const fallenPetal = makeBox(1.4, 4.4, 0.4, '#64748b');
   fallenPetal.position.set(-2.8, 0.5, 2.2);
   fallenPetal.rotation.z = Math.PI / 2.2;
   floralis.add(fallenPetal);
-  floralis.position.set(10, 0, -34);
+  floralis.position.set(12, 0, -38);
   scene.add(floralis);
 
-  // Facultad de Derecho UBA (Norte)
+  // Facultad de Derecho UBA
   const uba = new THREE.Group();
-  const ubaBody = makeBox(15, 5.2, 10, mats.limestone);
-  ubaBody.position.y = 2.6;
-  const ubaSteps = makeBox(12, 1.2, 3.2, '#9d9889');
-  ubaSteps.position.set(0, 0.6, 6.2);
+  const ubaBody = makeBox(16, 5.4, 11, mats.limestone);
+  ubaBody.position.y = 2.7;
+  const ubaSteps = makeBox(13, 1.2, 3.4, '#9d9889');
+  ubaSteps.position.set(0, 0.6, 6.6);
   uba.add(ubaBody, ubaSteps);
-  uba.position.set(-16, 0, -54);
+  uba.position.set(-18, 0, -68);
   scene.add(uba);
 
-  // Estación Retiro + Vías de Tren + Vagón Descarrilado + Torre Monumental
-  const tracks = makeBox(8, 0.14, 52, mats.track, false);
-  tracks.position.set(18, 0.08, -38);
+  // Estación Retiro + Vías + Vagón Descarrilado + Torre Monumental
+  const tracks = makeBox(8.5, 0.16, 68, mats.track, false);
+  tracks.position.set(22, 0.08, -50);
   scene.add(tracks);
 
-  const derailedCar = makeBox(2.4, 2.2, 6.8, '#8c4c3e');
-  derailedCar.position.set(17.5, 1.1, -28);
+  const derailedCar = makeBox(2.6, 2.4, 7.5, '#8c4c3e');
+  derailedCar.position.set(21.5, 1.2, -34);
   derailedCar.rotation.y = 0.35;
   derailedCar.rotation.z = 0.18;
   scene.add(derailedCar);
 
   const retiro = new THREE.Group();
-  const retHall = makeBox(12, 6.2, 14, mats.limestone);
-  retHall.position.y = 3.1;
-  const retArch = makeBox(10, 3.2, 14.5, mats.copper);
-  retArch.position.y = 7.4;
+  const retHall = makeBox(13, 6.4, 15, mats.limestone);
+  retHall.position.y = 3.2;
+  const retArch = makeBox(11, 3.4, 15.5, mats.copper);
+  retArch.position.y = 7.6;
   retiro.add(retHall, retArch);
-  retiro.position.set(18, 0, -54);
+  retiro.position.set(22, 0, -72);
   scene.add(retiro);
 
   const torreIngleses = new THREE.Group();
-  const tiBase = makeBox(4.0, 12.5, 4.0, mats.brick);
-  tiBase.position.y = 6.25;
-  const tiRoof = makeBox(3.4, 2.8, 3.4, mats.copper);
-  tiRoof.position.y = 13.8;
+  const tiBase = makeBox(4.2, 13.5, 4.2, mats.brick);
+  tiBase.position.y = 6.75;
+  const tiRoof = makeBox(3.6, 3.0, 3.6, mats.copper);
+  tiRoof.position.y = 14.8;
   torreIngleses.add(tiBase, tiRoof);
-  torreIngleses.position.set(29, 0, -52);
+  torreIngleses.position.set(36, 0, -68);
   scene.add(torreIngleses);
 
   // Estadio Monumental (Noroeste)
   const monumental = new THREE.Mesh(
-    new THREE.CylinderGeometry(11, 11, 4.5, 16, 1, true),
+    new THREE.CylinderGeometry(13, 13, 5.2, 18, 1, true),
     mats.ruined
   );
-  monumental.position.set(-54, 2.25, -48);
+  monumental.position.set(-64, 2.6, -68);
   monumental.castShadow = true;
   scene.add(monumental);
-  const monField = makeBox(14, 0.2, 14, mats.grass, false);
-  monField.position.set(-54, 0.1, -48);
+  const monField = makeBox(15, 0.25, 18, mats.soccerPitch, false);
+  monField.position.set(-64, 0.14, -68);
   scene.add(monField);
 
-  // =========================================================================
-  // 7. SECTORES CLAVE + BARRIOS: HOSPITAL, COMISARÍA, CENTRAL, ABASTO, LA BOCA
-  // =========================================================================
   // Hospital Central
   const hospital = new THREE.Group();
-  const hospMain = makeBox(10, 5.4, 8.5, mats.limestone);
-  hospMain.position.y = 2.7;
-  const hospWing = makeBox(5.2, 3.8, 5.2, mats.ruined);
-  hospWing.position.set(5.5, 1.9, 1.6);
-  const cross1 = makeBox(2.2, 0.6, 0.3, '#ef4444');
-  cross1.position.set(0, 4.0, 4.4);
-  const cross2 = makeBox(0.6, 2.2, 0.3, '#ef4444');
-  cross2.position.set(0, 4.0, 4.4);
+  const hospMain = makeBox(11, 5.6, 9.0, mats.limestone);
+  hospMain.position.y = 2.8;
+  const hospWing = makeBox(5.5, 4.0, 5.5, mats.ruined);
+  hospWing.position.set(6.0, 2.0, 1.8);
+  const cross1 = makeBox(2.4, 0.65, 0.3, '#ef4444');
+  cross1.position.set(0, 4.2, 4.65);
+  const cross2 = makeBox(0.65, 2.4, 0.3, '#ef4444');
+  cross2.position.set(0, 4.2, 4.65);
   hospital.add(hospMain, hospWing, cross1, cross2);
   hospital.position.set(-22, 0, 12);
   scene.add(hospital);
   registerInteractive(hospital, 'hospital');
 
-  // Comisaría y Bomberos
-  const police = new THREE.Group();
-  const polBody = makeBox(8.2, 3.6, 7.2, '#274075');
-  polBody.position.y = 1.8;
-  const fireBay = makeBox(4.5, 3.2, 6.2, mats.brick);
-  fireBay.position.set(5.8, 1.6, 0);
-  police.add(polBody, fireBay);
-  police.position.set(10, 0, 14);
-  scene.add(police);
-  registerInteractive(police, 'policia');
-
   // Central Eléctrica (Sur-Este)
   const powerPlant = new THREE.Group();
-  const ppBody = makeBox(9.0, 4.8, 8.0, mats.brick);
-  ppBody.position.y = 2.4;
-  const ch1 = makeBox(1.8, 9.5, 1.8, '#4b5563');
-  ch1.position.set(-2.2, 5.2, -1.8);
-  const ch2 = makeBox(1.8, 8.6, 1.8, '#4b5563');
-  ch2.position.set(2.2, 4.8, -1.8);
+  const ppBody = makeBox(10, 5.0, 8.8, mats.brick);
+  ppBody.position.y = 2.5;
+  const ch1 = makeBox(2.0, 10.5, 2.0, '#4b5563');
+  ch1.position.set(-2.4, 5.6, -2.0);
+  const ch2 = makeBox(2.0, 9.6, 2.0, '#4b5563');
+  ch2.position.set(2.4, 5.2, -2.0);
   powerPlant.add(ppBody, ch1, ch2);
-  powerPlant.position.set(16, 0, 34);
+  powerPlant.position.set(20, 0, 38);
   scene.add(powerPlant);
   registerInteractive(powerPlant, 'energia');
 
   // Abasto Shopping (Oeste)
-  const abasto = makeBox(12, 5.4, 9.5, mats.brick);
-  abasto.position.set(-52, 2.7, -22);
+  const abasto = makeBox(14, 5.8, 10.5, mats.brick);
+  abasto.position.set(-58, 2.9, -24);
   scene.add(abasto);
 
-  // Conventillos y Caminito de La Boca (Sur)
-  const bocaColors = ['#b45309', '#1d4ed8', '#b91c1c', '#15803d', '#a16207', '#7c2d12'];
-  bocaColors.forEach((col, i) => {
-    const house = makeBox(4.2, 3.2 + (i % 3) * 0.9, 4.4, col);
-    house.position.set(-24 + i * 5.2, 1.6, 52);
-    scene.add(house);
-  });
+  // Plazas con fuente seca (San Telmo y Recoleta)
+  createDryFountainPlaza(14, 62, 16);
+  createDryFountainPlaza(-56, -42, 14);
 
-  // Estadio La Bombonera en ruinas (Suroeste)
-  const bombonera = new THREE.Group();
-  const stWall1 = makeBox(14, 5.0, 2.6, '#1e3a8a');
-  stWall1.position.set(0, 2.5, -6);
-  const stWall2 = makeBox(14, 4.2, 2.6, '#ca8a04');
-  stWall2.position.set(0, 2.1, 6);
-  const stWall3 = makeBox(2.6, 4.8, 12, '#1e3a8a');
-  stWall3.position.set(-6, 2.4, 0);
-  const stField = makeBox(11, 0.2, 10, mats.grass, false);
-  stField.position.set(0, 0.1, 0);
-  bombonera.add(stWall1, stWall2, stWall3, stField);
-  bombonera.position.set(-52, 0, 38);
-  scene.add(bombonera);
+  // Caminito y Conventillos de La Boca con chapa acanalada colorida
+  for (let i = 0; i < 6; i += 1) {
+    const house = makeBox(5.2, 3.8 + (i % 2) * 1.1, 5.2, mats.caminitoTin);
+    house.position.set(-28 + i * 6.0, 2.0, 64);
+    const tinRoof = makeBox(5.6, 0.45, 5.6, '#6e7b7d');
+    tinRoof.position.set(-28 + i * 6.0, 4.0 + (i % 2) * 1.1, 64);
+    tinRoof.rotation.z = i % 2 === 0 ? 0.14 : -0.14;
+    scene.add(house, tinRoof);
+  }
 
   // =========================================================================
-  // 8. EDIFICIOS DESTRUIDOS DE RELLENO POR TODA LA CIUDAD
+  // 10. EDIFICIOS DESTRUIDOS DE RELLENO EN EL MAPA EXPANDIDO
   // =========================================================================
   const ruinedBlocks = [
-    [-22, 3.6, -11, 6.2, 7.2, 6.2, 0.04],
-    [-38, 2.8, -11, 5.8, 5.6, 5.8, -0.05],
-    [-38, 4.2, -32, 6.0, 8.4, 6.0, 0.03],
-    [-54, 3.0, -34, 6.2, 6.0, 6.2, -0.04],
-    [-38, 2.5, 12, 5.8, 5.0, 5.8, 0.04],
-    [-40, 3.4, 28, 6.0, 6.8, 6.0, -0.03],
-    [-18, 3.0, 30, 6.0, 6.0, 5.6, 0.05],
-    [4, 3.2, -12, 5.6, 6.4, 5.4, -0.04],
-    [8, 4.0, -24, 6.0, 8.0, 5.6, 0.03],
-    [22, 2.8, -12, 5.6, 5.6, 5.6, -0.03],
-    [20, 3.4, 14, 5.8, 6.8, 5.8, 0.04],
-    [-6, 2.6, 32, 5.5, 5.2, 5.5, -0.05],
-    [-38, 2.4, -52, 6.2, 4.8, 6.2, 0.03],
-    [-4, 3.0, -52, 6.0, 6.0, 5.8, -0.04],
+    [-22, 3.8, -11, 6.8, 7.6, 6.8, 0.04],
+    [-46, 3.0, -11, 6.2, 6.0, 6.2, -0.05],
+    [-46, 4.4, -36, 6.4, 8.8, 6.4, 0.03],
+    [-86, 3.4, -24, 7.0, 6.8, 7.0, -0.04],
+    [-86, 4.0, -48, 6.8, 8.0, 6.8, 0.03],
+    [-88, 2.8, 4, 6.5, 5.6, 6.5, -0.03],
+    [-48, 2.8, 12, 6.2, 5.6, 6.2, 0.04],
+    [-54, 3.6, 36, 6.6, 7.2, 6.6, -0.03],
+    [-22, 3.4, 36, 6.6, 6.8, 6.2, 0.05],
+    [4, 3.4, -12, 6.0, 6.8, 5.8, -0.04],
+    [8, 4.2, -26, 6.4, 8.4, 6.0, 0.03],
+    [24, 3.0, -14, 6.0, 6.0, 6.0, -0.03],
+    [-6, 3.0, 38, 6.0, 6.0, 6.0, -0.05],
+    [-44, 2.6, -68, 6.8, 5.2, 6.8, 0.03],
+    [-4, 3.2, -68, 6.4, 6.4, 6.2, -0.04],
+    [-88, 3.2, 66, 7.0, 6.4, 7.0, 0.04],
+    [32, 3.4, 62, 6.8, 6.8, 6.8, -0.04],
   ];
 
   ruinedBlocks.forEach(([x, y, z, w, h, d, tilt], idx) => {
@@ -554,22 +803,22 @@ export function createDestroyedCity(container, onSelectSector) {
   });
 
   // =========================================================================
-  // 9. PARTÍCULAS DE HUMO Y CENIZA
+  // 11. PARTÍCULAS DE HUMO Y CENIZA
   // =========================================================================
   const smokeParticles = [];
-  const smokeGeo = new THREE.BoxGeometry(0.75, 0.75, 0.75);
+  const smokeGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
   const smokeMat = new THREE.MeshLambertMaterial({
     color: '#9ca3af',
     transparent: true,
-    opacity: 0.45,
+    opacity: 0.42,
   });
 
-  for (let i = 0; i < 65; i += 1) {
+  for (let i = 0; i < 85; i += 1) {
     const p = new THREE.Mesh(smokeGeo, smokeMat);
     p.position.set(
-      (Math.random() - 0.5) * 115,
-      1.5 + Math.random() * 16,
-      (Math.random() - 0.5) * 105
+      (Math.random() - 0.5) * 165,
+      1.5 + Math.random() * 18,
+      (Math.random() - 0.5) * 150
     );
     p.userData.speed = 0.015 + Math.random() * 0.03;
     scene.add(p);
@@ -625,7 +874,7 @@ export function createDestroyedCity(container, onSelectSector) {
 
     smokeParticles.forEach((p) => {
       p.position.y += p.userData.speed;
-      if (p.position.y > 18) {
+      if (p.position.y > 20) {
         p.position.y = 1.5;
       }
     });
