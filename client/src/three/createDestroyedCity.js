@@ -830,6 +830,34 @@ export function createDestroyedCity(container, onSelectSector) {
   const pointer = new THREE.Vector2();
   let pointerDownPos = { x: 0, y: 0 };
 
+  // Marcadores visuales 3D del nivel de mejora por sector
+  const sectorBeaconPositions = {
+    subte: [-12, 5.2, -13],
+    puerto: [58, 12.5, 6],
+    energia: [20, 11.5, 38],
+    hospital: [-22, 8.2, 12],
+    policia: [10, 7.6, 14],
+  };
+  const sectorBeacons = {};
+  Object.entries(sectorBeaconPositions).forEach(([key, [bx, by, bz]]) => {
+    const beacon = makeBox(1.4, 1.4, 1.4, '#ef4444');
+    beacon.position.set(bx, by, bz);
+    scene.add(beacon);
+    sectorBeacons[key] = beacon;
+  });
+
+  const updateSectors = (sectors = []) => {
+    const levelColors = ['#ef4444', '#f59e0b', '#22c55e', '#38bdf8'];
+    sectors.forEach((s) => {
+      const beacon = sectorBeacons[s.id];
+      if (!beacon) return;
+      const color = levelColors[s.level] || '#ef4444';
+      beacon.material.color.set(color);
+      const scale = 1 + s.level * 0.35;
+      beacon.scale.set(scale, scale, scale);
+    });
+  };
+
   const handlePointerDown = (e) => {
     pointerDownPos = { x: e.clientX, y: e.clientY };
   };
@@ -879,21 +907,28 @@ export function createDestroyedCity(container, onSelectSector) {
       }
     });
 
+    Object.values(sectorBeacons).forEach((b) => {
+      b.rotation.y += 0.02;
+    });
+
     controls.update();
     renderer.render(scene, camera);
   };
   animate();
 
-  return () => {
-    cancelAnimationFrame(animId);
-    window.removeEventListener('resize', handleResize);
-    renderer.domElement.removeEventListener('pointerdown', handlePointerDown);
-    renderer.domElement.removeEventListener('pointerup', handlePointerUp);
-    controls.dispose();
-    Object.values(tex).forEach((t) => t.dispose());
-    renderer.dispose();
-    if (renderer.domElement.parentNode === container) {
-      container.removeChild(renderer.domElement);
-    }
+  return {
+    updateSectors,
+    cleanup: () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', handleResize);
+      renderer.domElement.removeEventListener('pointerdown', handlePointerDown);
+      renderer.domElement.removeEventListener('pointerup', handlePointerUp);
+      controls.dispose();
+      Object.values(tex).forEach((t) => t.dispose());
+      renderer.dispose();
+      if (renderer.domElement.parentNode === container) {
+        container.removeChild(renderer.domElement);
+      }
+    },
   };
 }

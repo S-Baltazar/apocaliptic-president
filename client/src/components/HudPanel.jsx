@@ -1,9 +1,30 @@
 import React from 'react';
 import PixelPortrait from './PixelPortrait.jsx';
+import { SECTOR_LEVELS } from '../data/gameCatalog.js';
 
-export default function HudPanel({ gameState, selectedSector, onCloseSector }) {
+export default function HudPanel({
+  gameState,
+  selectedSector,
+  sectorError,
+  onSelectSectorById,
+  onCloseSector,
+  onChangeSectorLevel,
+  onAdvanceMonth,
+  onOpenDiplomacy,
+}) {
   const { playerName, president, cityName, month, stats, sectors } = gameState;
   const monthlyBalance = stats.monthlyIncome - stats.monthlyExpenses;
+
+  const liveSector = selectedSector
+    ? sectors.find((s) => s.id === selectedSector.id) || null
+    : null;
+  const sectorLevels = liveSector ? SECTOR_LEVELS[liveSector.id] : null;
+  const nextLevelCfg =
+    liveSector && sectorLevels && liveSector.level < sectorLevels.length - 1
+      ? sectorLevels[liveSector.level + 1]
+      : null;
+  const discount = president.id === 'tecnocrata' ? 0.85 : 1;
+  const nextUpgradeCost = nextLevelCfg ? Math.round(nextLevelCfg.upgradeCost * discount) : 0;
 
   return (
     <>
@@ -16,7 +37,7 @@ export default function HudPanel({ gameState, selectedSector, onCloseSector }) {
               PRES. {playerName.toUpperCase()} — {president.title}
             </span>
             <span className="hud-city-date">
-              {cityName} • MES {month} • ESTADO: CRISIS
+              {cityName} • MES {month} • INGRESOS +${stats.monthlyIncome}k / GASTOS -${stats.monthlyExpenses}k
             </span>
           </div>
         </div>
@@ -24,13 +45,14 @@ export default function HudPanel({ gameState, selectedSector, onCloseSector }) {
         <div className="hud-metrics">
           <div className="metric-chip">
             <span className="metric-label">TESORERÍA</span>
-            <span className="metric-value positive">${stats.treasury}k</span>
+            <span className={`metric-value ${stats.treasury >= 0 ? 'positive' : 'danger'}`}>
+              ${stats.treasury}k
+            </span>
           </div>
           <div className="metric-chip">
             <span className="metric-label">BALANCE/MES</span>
             <span className={`metric-value ${monthlyBalance >= 0 ? 'positive' : 'danger'}`}>
-              {monthlyBalance >= 0 ? '+' : ''}
-              ${monthlyBalance}k
+              {monthlyBalance >= 0 ? '+' : ''}${monthlyBalance}k
             </span>
           </div>
           <div className="metric-chip">
@@ -50,19 +72,39 @@ export default function HudPanel({ gameState, selectedSector, onCloseSector }) {
             <span className="metric-value warning">{stats.congressSupport}%</span>
           </div>
         </div>
+
+        <div className="hud-top-actions">
+          <button
+            type="button"
+            className="pixel-btn pixel-btn--secondary"
+            onClick={onOpenDiplomacy}
+          >
+            POTENCIAS EXTRANJERAS
+          </button>
+          <button type="button" className="pixel-btn" onClick={onAdvanceMonth}>
+            AVANZAR MES ▶
+          </button>
+        </div>
       </header>
 
       {/* Paneles laterales medios */}
       <div className="hud-middle">
         <aside className="pixel-box sectors-panel interactive">
-          <div className="sectors-title">SECTORES DE LA CIUDAD</div>
+          <div className="sectors-title">SECTORES (CLIC PARA GESTIONAR)</div>
           {sectors.map((sector) => (
-            <div key={sector.id} className="sector-row">
+            <button
+              type="button"
+              key={sector.id}
+              className={`sector-row sector-row-btn ${
+                selectedSector?.id === sector.id ? 'is-active' : ''
+              }`}
+              onClick={() => onSelectSectorById(sector.id)}
+            >
               <span>{sector.name}</span>
               <span className={`sector-badge lvl-${sector.level}`}>
                 NV.{sector.level} • ${sector.monthlyCost}k
               </span>
-            </div>
+            </button>
           ))}
         </aside>
 
@@ -80,14 +122,50 @@ export default function HudPanel({ gameState, selectedSector, onCloseSector }) {
               </button>
             </div>
             <p style={{ fontSize: '19px', color: '#f59e0b' }}>
-              Estado actual: {selectedSector.status}
+              Estado: {liveSector ? `Nivel ${liveSector.level} — ${liveSector.status}` : selectedSector.status}
             </p>
             <p style={{ fontSize: '18px', color: '#e8ecf5', lineHeight: 1.2 }}>
               {selectedSector.description}
             </p>
-            <div className="pixel-box-dark" style={{ padding: '6px 8px', fontSize: '17px' }}>
-              Costo actual: ${selectedSector.monthlyCost}k/mes
-            </div>
+
+            {liveSector && (
+              <>
+                <div className="pixel-box-dark" style={{ padding: '6px 8px', fontSize: '17px' }}>
+                  Mantenimiento actual: ${liveSector.monthlyCost}k/mes
+                  {nextLevelCfg && (
+                    <div style={{ color: '#38bdf8', marginTop: '2px' }}>
+                      Próx. nivel ({nextLevelCfg.status}): ${nextUpgradeCost}k obra • $
+                      {nextLevelCfg.monthlyCost}k/mes
+                    </div>
+                  )}
+                </div>
+
+                {sectorError && (
+                  <div style={{ color: '#ef4444', fontSize: '17px' }}>{sectorError}</div>
+                )}
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    className="pixel-btn"
+                    style={{ flex: 1, fontSize: '9px', padding: '8px 6px' }}
+                    disabled={!nextLevelCfg}
+                    onClick={() => onChangeSectorLevel(liveSector.id, 'up')}
+                  >
+                    {nextLevelCfg ? `SUBIR ▲ ($${nextUpgradeCost}k)` : 'NIVEL MÁXIMO'}
+                  </button>
+                  <button
+                    type="button"
+                    className="pixel-btn pixel-btn--secondary"
+                    style={{ flex: 1, fontSize: '9px', padding: '8px 6px' }}
+                    disabled={liveSector.level <= 0}
+                    onClick={() => onChangeSectorLevel(liveSector.id, 'down')}
+                  >
+                    BAJAR ▼ (-Gasto)
+                  </button>
+                </div>
+              </>
+            )}
           </aside>
         )}
       </div>
